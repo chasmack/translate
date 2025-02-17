@@ -1,8 +1,8 @@
 # translate
 
 Translate Russian words and phrases to English with Google Cloud Translate 
-and Text-to-Speech. The results are used to create note data for Anki 
-Russian-English flashcards. 
+and Text-to-Speech. The results are used to create Russian-English note data
+for Anki flashcards. 
 
 The input text file consists of Russian words and phrases to be translated.
 Each line can have one or more words or phrases separated by commas.
