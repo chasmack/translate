@@ -1,0 +1,49 @@
+Name: ru-RU-Standard-A
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Standard-B
+Supported language: ru-RU
+SSML Voice Gender: MALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Standard-C
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Standard-D
+Supported language: ru-RU
+SSML Voice Gender: MALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Standard-E
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Wavenet-A
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Wavenet-B
+Supported language: ru-RU
+SSML Voice Gender: MALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Wavenet-C
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Wavenet-D
+Supported language: ru-RU
+SSML Voice Gender: MALE
+Natural Sample Rate Hertz: 24000
+
+Name: ru-RU-Wavenet-E
+Supported language: ru-RU
+SSML Voice Gender: FEMALE
+Natural Sample Rate Hertz: 24000
