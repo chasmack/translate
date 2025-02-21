@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ssml-example.xml - the Russian alphabet
+    
+    synthesis parameters -
+
+      voice_name ru-RU-Wavenet-B
+      voice_ssml_gender MALE
+      speaking_rate 0.85
+      pitch -4.0
+
+    Note: The say-as element can only contain text to be rendered.
+
+    https://www.w3.org/TR/speech-synthesis/#S3.1.9
+
+    Note also: This file exceeds the 5000 character limit imposed by
+    Google Cloud Text-to-Speech and needs to be processed in parts.
+-->
+
+<speak>
+    <say-as interpret-as="verbatim">А</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">А</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Б</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Б</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">В</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">В</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Г</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Г</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Д</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Д</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Е</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Е</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ё</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ё</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ж</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ж</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">З</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">З</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">И</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">И</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Й</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Й</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">К</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">К</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Л</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Л</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">М</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">М</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Н</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Н</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">О</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">О</say-as><break time="750ms"/>
+    </voice>
+    
+    <say-as interpret-as="verbatim">П</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">П</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Р</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Р</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">С</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">С</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Т</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Т</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">У</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">У</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ф</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ф</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Х</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Х</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ц</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ц</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ч</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ч</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ш</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ш</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Щ</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Щ</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ъ</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ъ</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ы</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ы</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ь</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ь</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Э</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Э</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Ю</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Ю</say-as><break time="750ms"/>
+    </voice>
+
+    <say-as interpret-as="verbatim">Я</say-as><break time="450ms"/>
+    <voice name="ru-RU-Wavenet-A">
+        <say-as interpret-as="verbatim">Я</say-as>
+    </voice>
+
+</speak>

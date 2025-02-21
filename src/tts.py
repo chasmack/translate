@@ -8,6 +8,7 @@ from google.cloud import texttospeech
 
 MPV_EXEC = ['/usr/bin/mpv', '-', '--really-quiet']
 
+
 def tts(textfile, outfile, args):
 
     # Initialize the tts client
@@ -72,13 +73,6 @@ def tts(textfile, outfile, args):
     else:
         raise ValueError(f"Invalid pitch [-20.0, 20.0]: {args.pitch}")
 
-    if (args.volume_gain_db is None or
-        args.volume_gain_db >= -96.0 and args.volume_gain_db <= 16.0):
-        # gain in range [-96.0, 16.0] (dB) or None for default (0.0)
-        config_params['volume_gain_db'] = args.volume_gain_db
-    else:
-        raise ValueError(f"Invalid volume gain [-96.0, 16.0]: {args.volume_gain_db}")
-
     audio_config = texttospeech.AudioConfig(mapping=config_params)
 
     response = client.synthesize_speech(
@@ -94,7 +88,9 @@ def tts(textfile, outfile, args):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
 
+        print("Playing results... ", end='', flush=True)
         stderr = proc.communicate(input=response.audio_content)[1]
+        print("done.")
 
         if stderr:
             print(f"Error: {stderr.decode('utf-8')}")
@@ -103,7 +99,7 @@ def tts(textfile, outfile, args):
         with open(outfile, mode='wb') as f:
             f.write(response.audio_content)
 
-    print("Done")
+        print("Done.")
 
 
 def list_voices():
@@ -138,17 +134,14 @@ if __name__ == "__main__":
 
     parser.add_argument("textfile", help="Russian words and phrases")
     parser.add_argument("outfile", help="audio output file or '-' to send output to player")
-    parser.add_argument("--list_voices", action="store_true", help="list available voices")
-    parser.add_argument("--ssml", action="store_true", help="enable SSML text input")
 
+    parser.add_argument("--ssml", action="store_true", help="enable SSML text input")
     parser.add_argument("--voice_name", help="name of the voice")
     parser.add_argument("--voice_ssml_gender", help="preferred gender of voice")
     parser.add_argument("--speaking_rate", type=float,
                         help="speaking rates between 0.25 and 4.0")
     parser.add_argument("--pitch", type=float,
                         help="speaking pitch between 20.0 and -20.0 (semitones)")
-    parser.add_argument("--volume_gain_db", type=float,
-                        help="gain between -96.0 and 16.0 (dB)")
 
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="increase diagnostic output")
