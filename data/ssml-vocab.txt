@@ -1,0 +1,4 @@
+# ssml-vocab.txt - example words and phrases for vocab.py
+
+Каша, Земля
+Краткое, Твёрдый знак, Мягкий знак

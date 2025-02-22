@@ -22,35 +22,29 @@ def tts(textfile, outfile, args):
     else:
         synthesis_input = texttospeech.SynthesisInput(text=text)
 
-    # Voice parameters
-    voice_params = dict()
-    voice_params['language_code'] = 'ru-RU'
-    match args.voice_name:
-        case None:
-            voice_params['name'] = 'ru-RU-Wavenet-A'
-        case _:
-            voice_params['name'] = args.voice_name
-    match args.voice_ssml_gender:
-        case None | "FEMALE":
-            voice_params['ssml_gender'] = texttospeech.SsmlVoiceGender.FEMALE
-        case "MALE":
-            voice_params['ssml_gender'] = texttospeech.SsmlVoiceGender.MALE
-        case "NeUTRAL":
-            voice_params['ssml_gender'] = texttospeech.SsmlVoiceGender.NEUTRAL
-        case _:
-            raise ValueError(f"Invalid SSML Gender: {args.voice_ssml_gender}")
+    # Voice selection parameters
+    voice_params = {
+        'language_code': 'ru-RU',
+        'name': args.voice_name,
+        'ssml_gender': getattr(
+            texttospeech.SsmlVoiceGender, args.voice_ssml_gender)
+        if args.voice_ssml_gender else None
+    }
 
     voice = texttospeech.VoiceSelectionParams(mapping=voice_params)
 
     # Audio configuration parameters
-    config_params = dict()
+    config_params = {
+        'speaking_rate': args.speaking_rate,
+        'pitch': args.pitch,
+    }
 
     if outfile == '-':
-        # generate an mp3 file for mpv player
+        # Generate an mp3 file for the mpv player
         config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
     else:
         match os.path.splitext(outfile)[1].upper():
-            case '.MP3' | '-':
+            case '.MP3':
                 config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
             case '.WAV':
                 config_params['audio_encoding'] = texttospeech.AudioEncoding.LINEAR16
@@ -58,20 +52,6 @@ def tts(textfile, outfile, args):
                 config_params['audio_encoding'] = texttospeech.AudioEncoding.OGG_OPUS
             case _:
                 raise ValueError(f"Invalid encoding format: {outfile}")
-
-        if (args.speaking_rate is None or
-            args.speaking_rate >= 0.25 and args.speaking_rate <= 4.0):
-            # speaking rate in range [0.25, 4.0] or None for default (1.0)
-            config_params['speaking_rate'] = args.speaking_rate
-        else:
-            raise ValueError(f"Invalid speaking rate [0.25, 4.0]: {args.speaking_rate}")
-
-    if (args.pitch is None or
-        args.pitch >= -20.0 and args.pitch <= 20.0):
-        # pitch in range [-20.0, 20.0] or None for default (0.0)
-        config_params['pitch'] = args.pitch
-    else:
-        raise ValueError(f"Invalid pitch [-20.0, 20.0]: {args.pitch}")
 
     audio_config = texttospeech.AudioConfig(mapping=config_params)
 

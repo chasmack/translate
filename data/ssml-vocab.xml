@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<speak>
+  <seq>
+    <media xml:id="rus00a" begin="1200ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-A">Каша</voice>
+      </speak>
+    </media>
+    <media xml:id="rus00b" begin="rus00a.end+650ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-B">Каша</voice>
+      </speak>
+    </media>
+    <media xml:id="eng00" begin="rus00b.end+1200ms">
+      <speak>
+        <voice name="en-US-Standard-C">Porridge</voice>
+      </speak>
+    </media>
+    <media xml:id="rus01a" begin="1200ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-A">Земля</voice>
+      </speak>
+    </media>
+    <media xml:id="rus01b" begin="rus01a.end+650ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-B">Земля</voice>
+      </speak>
+    </media>
+    <media xml:id="eng01" begin="rus01b.end+1200ms">
+      <speak>
+        <voice name="en-US-Standard-C">Earth</voice>
+      </speak>
+    </media>
+    <media xml:id="rus02a" begin="1200ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-A">Краткое</voice>
+      </speak>
+    </media>
+    <media xml:id="rus02b" begin="rus02a.end+650ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-B">Краткое</voice>
+      </speak>
+    </media>
+    <media xml:id="eng02" begin="rus02b.end+1200ms">
+      <speak>
+        <voice name="en-US-Standard-C">Brief</voice>
+      </speak>
+    </media>
+    <media xml:id="rus03a" begin="1200ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-A">Твёрдый знак</voice>
+      </speak>
+    </media>
+    <media xml:id="rus03b" begin="rus03a.end+650ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-B">Твёрдый знак</voice>
+      </speak>
+    </media>
+    <media xml:id="eng03" begin="rus03b.end+1200ms">
+      <speak>
+        <voice name="en-US-Standard-C">Hard sign</voice>
+      </speak>
+    </media>
+    <media xml:id="rus04a" begin="1200ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-A">Мягкий знак</voice>
+      </speak>
+    </media>
+    <media xml:id="rus04b" begin="rus04a.end+650ms">
+      <speak>
+        <voice name="ru-RU-Wavenet-B">Мягкий знак</voice>
+      </speak>
+    </media>
+    <media xml:id="eng04" begin="rus04b.end+1200ms">
+      <speak>
+        <voice name="en-US-Standard-C">Soft sign</voice>
+      </speak>
+    </media>
+  </seq>
+</speak>
