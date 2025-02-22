@@ -1,5 +1,6 @@
-# vocab.py - Translate Russian words and phrases to English and
-# create an audio vocabulary lesson.
+# vocab-seq.py - Translate Russian words and phrases to English and
+# create an audio vocabulary lesson. SSML generated uses the <seq>
+# element to sequence synthesized segments.
 #
 
 import os
@@ -24,10 +25,9 @@ VOICE_RUSSIAN_B = "ru-RU-Wavenet-B"
 VOICE_ENGLISH = "en-US-Standard-C"
 
 # Delays between media elements
-BREAK_RUSSIAN_A = '650ms'
-BREAK_RUSSIAN_B = '1200ms'
-BREAK_ENGLISH = '1200ms'
-
+MEDIA_START_DELAY_RUSSIAN_A = '1200ms'
+MEDIA_START_DELAY_RUSSIAN_B = '650ms'
+MEDIA_START_DELAY_ENGLISH = '1200ms'
 
 def make_lesson(args):
 
@@ -47,8 +47,11 @@ def make_lesson(args):
     xlt_client = translate.TranslationServiceClient()
     tts_client = texttospeech.TextToSpeechClient()
 
-    # Voice selection parameters. Actual voice names are set in the SSML.
-    voice_params = {'language_code': 'ru-RU'}
+    # Voice selection parameters
+    voice_params = {
+        'language_code': 'ru-RU',
+    }
+
     voice_select = texttospeech.VoiceSelectionParams(mapping=voice_params)
 
     if args.verbose:
@@ -58,19 +61,21 @@ def make_lesson(args):
     config_params = {
         'speaking_rate': args.speaking_rate,
         'pitch': args.pitch,
-        'volume_gain_db': args.volume_gain_db,
     }
 
-    match args.outfile[-3:].upper():
-        case 'MP3' | '-':
-            # Generate an mp3 file for the mpv player
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
-        case 'WAV':
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.LINEAR16
-        case 'OGG':
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.OGG_OPUS
-        case _:
-            raise ValueError(f"Invalid encoding format: {args.outfile}")
+    if args.outfile == '-':
+        # Generate an mp3 file for the mpv player
+        config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
+    else:
+        match os.path.splitext(args.outfile)[1].upper():
+            case '.MP3':
+                config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
+            case '.WAV':
+                config_params['audio_encoding'] = texttospeech.AudioEncoding.LINEAR16
+            case '.OGG':
+                config_params['audio_encoding'] = texttospeech.AudioEncoding.OGG_OPUS
+            case _:
+                raise ValueError(f"Invalid encoding format: {args.outfile}")
 
     audio_config = texttospeech.AudioConfig(mapping=config_params)
 
@@ -94,39 +99,90 @@ def make_lesson(args):
             print(f"{rus} => {eng}")
         print('\n')
 
-    # Create three voice elements for each Russian word/phrase
-    # to synthesize Russian in voices A, B and English.
+    # Create three media elements for each word/phrase
+    # to synthesize Russian in voices A and B and English.
+    # Media elements take the form -
     #
-    #  <voice name="ru-RU-Wavenet-A">Каша<break time="650ms"/></voice>
-    #  <voice name="ru-RU-Wavenet-B">Каша<break time="1200ms"/></voice>
-    #  <voice name="en-US-Standard-C">Porridge<break time="1200ms"/></voice>
+    # <media xml:id="rus-01a" begin="1000ms">
+    #   <speak>
+    #     <prosody rate="85% pitch="-2st" volume="+3dB"
+    #       <voice name="ru-RU-Wavenet-B">
+    #         Медведь
+    #       </voice>
+    #     </prosody>
+    #   </speak>
+    # </media>
 
-     # Initialize the XML root element
-    elem_root = ET.Element('speak')
+    prosody_attribs = {}
+    if args.speaking_rate is not None:
+        prosody_attribs['rate'] = f'{int(round(100 * args.speaking_rate))}%'
+    if args.pitch is not None:
+        prosody_attribs['pitch'] = f'{args.pitch:+}st'
+    if args.volume_gain_db is not None:
+        prosody_attribs['volume'] = f'{args.volume_gain_db:+}dB'
 
+     # Initialize the XML root elements
+    root = ET.Element('speak')
+    seq = ET.SubElement(root, 'seq')
 
     for i in range(len(texts)):
         rus, eng = texts[i]
 
-        elem_voice = ET.Element('voice', attrib={'name': VOICE_RUSSIAN_A})
-        elem_voice.text = rus
-        elem_voice.append(ET.Element('break', attrib={'time': BREAK_RUSSIAN_A}))
-        elem_root.append(elem_voice)
+        # Russian A media element
+        media = ET.Element('media',
+                          attrib={
+                              'xml:id': f'rus{i:02}a',
+                              'begin': MEDIA_START_DELAY_RUSSIAN_A,
+                          })
+        speak = ET.SubElement(media, 'speak')
+        if prosody_attribs:
+            prosody = ET.SubElement(speak, 'prosody', attrib=prosody_attribs)
+        else:
+            # skip the prosody element if the attributes are empty
+            prosody = speak
+        voice = ET.SubElement(prosody, 'voice',
+                                attrib={'name': VOICE_RUSSIAN_A})
+        voice.text = rus
+        seq.append(media)
 
-        elem_voice = ET.Element('voice', attrib={'name': VOICE_RUSSIAN_B})
-        elem_voice.text = rus
-        elem_voice.append(ET.Element('break', attrib={'time': BREAK_RUSSIAN_B}))
-        elem_root.append(elem_voice)
+        # Russian B media element
+        media = ET.Element('media',
+                          attrib={
+                              'xml:id': f'rus{i:02}b',
+                              'begin': f'rus{i:02}a.end+{MEDIA_START_DELAY_RUSSIAN_B}',
+                          })
+        speak = ET.SubElement(media, 'speak')
+        if prosody_attribs:
+            prosody = ET.SubElement(speak, 'prosody', attrib=prosody_attribs)
+        else:
+            # skip the prosody element if the attributes are empty
+            prosody = speak
+        voice = ET.SubElement(prosody, 'voice',
+                                attrib={'name': VOICE_RUSSIAN_B})
+        voice.text = rus
+        seq.append(media)
 
-        elem_voice = ET.Element('voice', attrib={'name': VOICE_ENGLISH})
-        elem_voice.text = eng
-        elem_voice.append(ET.Element('break', attrib={'time': BREAK_ENGLISH}))
-        elem_root.append(elem_voice)
+        # English translation media element
+        media = ET.Element('media',
+                          attrib={
+                              'xml:id': f'eng{i:02}',
+                              'begin': f'rus{i:02}b.end+{MEDIA_START_DELAY_ENGLISH}',
+                          })
+        speak = ET.SubElement(media, 'speak')
+        if prosody_attribs:
+            prosody = ET.SubElement(speak, 'prosody', attrib=prosody_attribs)
+        else:
+            # skip the prosody element if the attributes are empty
+            prosody = speak
+        voice = ET.SubElement(prosody, 'voice',
+                                attrib={'name': VOICE_ENGLISH})
+        voice.text = eng
+        seq.append(media)
 
     if args.verbose:
-        ET.indent(elem_root, space="  ")
+        ET.indent(root, space="  ")
 
-    xml = ET.tostring(elem_root,
+    xml = ET.tostring(root,
                       encoding='unicode',
                       method='xml',
                       xml_declaration=True)
@@ -168,6 +224,7 @@ if __name__ == "__main__":
     parser.add_argument("textfile", help="Russian words and phrases")
     parser.add_argument("outfile",
                         help="audio output file or '-' to send to player")
+
     # Options
     parser.add_argument("--speaking_rate", type=float,
                         help="speaking rates between 0.25 and 4.0")
@@ -175,6 +232,7 @@ if __name__ == "__main__":
                         help="pitch between -20 and +20 (semitones)")
     parser.add_argument("--volume_gain_db", type=int,
                         help="volume between -96 and +16 (decibels)")
+
     # Debugging
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="increase diagnostic output")

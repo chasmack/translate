@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!--
+    ssml-vocab-seq.xml - Russian vocabulary lesson using the
+    SSML <seq> element to assemble three voices
+
+    synthesis parameters -
+
+      voice_name ru-RU-Wavenet-B
+      speaking_rate 0.95
+      pitch -2
+      volume_gain_db +3
+
+    Note: Global synthesis parameters set in the audio config
+    do not appear to filter down to the individual media <speak>
+    elements. You instead use <prosody> around the <voice> elements
+    to set speaking rate, pitch and volume.
+
+    Note: The use of <seq> here is extremely wasteful of bandwidth.
+    We start with 40 characters of russian text and end up with 3427
+    characters of xml (2625 characters unformatted). Simple <break>
+    elements should be far more efficient.
+
+-->
+
+<speak>
+  <seq>
+    <media xml:id="rus00a" begin="1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-A">Каша</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus00b" begin="rus00a.end+650ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-B">Каша</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="eng00" begin="rus00b.end+1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="en-US-Standard-C">Porridge</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus01a" begin="1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-A">Земля</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus01b" begin="rus01a.end+650ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-B">Земля</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="eng01" begin="rus01b.end+1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="en-US-Standard-C">Earth</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus02a" begin="1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-A">Краткое</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus02b" begin="rus02a.end+650ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-B">Краткое</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="eng02" begin="rus02b.end+1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="en-US-Standard-C">Brief</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus03a" begin="1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-A">Твёрдый знак</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus03b" begin="rus03a.end+650ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-B">Твёрдый знак</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="eng03" begin="rus03b.end+1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="en-US-Standard-C">Hard sign</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus04a" begin="1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-A">Мягкий знак</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="rus04b" begin="rus04a.end+650ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="ru-RU-Wavenet-B">Мягкий знак</voice>
+        </prosody>
+      </speak>
+    </media>
+    <media xml:id="eng04" begin="rus04b.end+1200ms">
+      <speak>
+        <prosody rate="95%" pitch="-2st" volume="+3dB">
+          <voice name="en-US-Standard-C">Soft sign</voice>
+        </prosody>
+      </speak>
+    </media>
+  </seq>
+</speak>

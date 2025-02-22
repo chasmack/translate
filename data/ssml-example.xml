@@ -5,7 +5,6 @@
     synthesis parameters -
 
       voice_name ru-RU-Wavenet-B
-      voice_ssml_gender MALE
       speaking_rate 0.85
       pitch -4.0
 
