@@ -1,41 +1,44 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!--
-    ssml-vocab.xml - Russian vocabulary lesson
+  ssml-vocab.xml - Russian vocabulary lesson
 
-    synthesis parameters -
-      speaking_rate 0.85
-      pitch -2
-      volume_gain_db +3
+  synthesis parameters -
+    speaking_rate 0.85
+    pitch -2
+    volume_gain_db +3
+
+  Note: Overhead is 40 characters / 5 words/phrases in, 1084 XML characters out
 -->
 <speak>
   <voice name="ru-RU-Wavenet-A">Каша<break time="650ms" />
   </voice>
   <voice name="ru-RU-Wavenet-B">Каша<break time="1200ms" />
   </voice>
-  <voice name="en-US-Standard-C">Porridge<break time="1200ms" />
+  <voice name="en-US-Standard-C">Porridge<break time="1500ms" />
   </voice>
   <voice name="ru-RU-Wavenet-A">Земля<break time="650ms" />
   </voice>
   <voice name="ru-RU-Wavenet-B">Земля<break time="1200ms" />
   </voice>
-  <voice name="en-US-Standard-C">Earth<break time="1200ms" />
+  <voice name="en-US-Standard-C">Earth<break time="1500ms" />
   </voice>
   <voice name="ru-RU-Wavenet-A">Краткое<break time="650ms" />
   </voice>
   <voice name="ru-RU-Wavenet-B">Краткое<break time="1200ms" />
   </voice>
-  <voice name="en-US-Standard-C">Brief<break time="1200ms" />
+  <voice name="en-US-Standard-C">Brief<break time="1500ms" />
   </voice>
   <voice name="ru-RU-Wavenet-A">Твёрдый знак<break time="650ms" />
   </voice>
   <voice name="ru-RU-Wavenet-B">Твёрдый знак<break time="1200ms" />
   </voice>
-  <voice name="en-US-Standard-C">Hard sign<break time="1200ms" />
+  <voice name="en-US-Standard-C">Hard sign<break time="1500ms" />
   </voice>
   <voice name="ru-RU-Wavenet-A">Мягкий знак<break time="650ms" />
   </voice>
   <voice name="ru-RU-Wavenet-B">Мягкий знак<break time="1200ms" />
   </voice>
-  <voice name="en-US-Standard-C">Soft sign<break time="1200ms" />
+  <voice name="en-US-Standard-C">Soft sign<break time="1500ms" />
   </voice>
 </speak>
+

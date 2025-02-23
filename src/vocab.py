@@ -1,8 +1,8 @@
+#
 # vocab.py - Translate Russian words and phrases to English and
 # create an audio vocabulary lesson.
 #
 
-import os
 import argparse
 import xml.etree.ElementTree as ET
 import subprocess
@@ -26,7 +26,7 @@ VOICE_ENGLISH = "en-US-Standard-C"
 # Delays between media elements
 BREAK_RUSSIAN_A = '650ms'
 BREAK_RUSSIAN_B = '1200ms'
-BREAK_ENGLISH = '1200ms'
+BREAK_ENGLISH = '1500ms'
 
 
 def make_lesson(args):
@@ -94,19 +94,18 @@ def make_lesson(args):
             print(f"{rus} => {eng}")
         print('\n')
 
-    # Create three voice elements for each Russian word/phrase
-    # to synthesize Russian in voices A, B and English.
+    # Create three <voice> elements for each Russian word/phrase
+    # to synthesize voices in Russian A and B and in English.
     #
     #  <voice name="ru-RU-Wavenet-A">Каша<break time="650ms"/></voice>
     #  <voice name="ru-RU-Wavenet-B">Каша<break time="1200ms"/></voice>
     #  <voice name="en-US-Standard-C">Porridge<break time="1200ms"/></voice>
 
-     # Initialize the XML root element
+    # Initialize the XML root element
     elem_root = ET.Element('speak')
 
-
-    for i in range(len(texts)):
-        rus, eng = texts[i]
+    # For each Russian text/translation generate three voice elements
+    for rus, eng in texts:
 
         elem_voice = ET.Element('voice', attrib={'name': VOICE_RUSSIAN_A})
         elem_voice.text = rus
@@ -124,6 +123,7 @@ def make_lesson(args):
         elem_root.append(elem_voice)
 
     if args.verbose:
+        # Expand XML for pretty print
         ET.indent(elem_root, space="  ")
 
     xml = ET.tostring(elem_root,
@@ -137,18 +137,20 @@ def make_lesson(args):
     response = tts_client.synthesize_speech(
         input=texttospeech.SynthesisInput(mapping={'ssml': xml}),
         voice=voice_select,
-        audio_config=audio_config,)
+        audio_config=audio_config)
 
     if args.outfile == '-':
-        # pipe data to the mpv player
+        # Pipe the audio data to the mpv player
         proc = subprocess.Popen(MPV_EXEC,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.PIPE)
 
-        print("Playing results... ", end='', flush=True)
-        stderr = proc.communicate(input=response.audio_content)[1]
-        print("done.")
+        print("Playing results...  ", end='', flush=True)
+        proc_out = proc.communicate(input=response.audio_content)
+        stderr = proc_out[1]
+
+        print("Done.")
 
         if stderr:
             print(f"Error: {stderr.decode('utf-8')}")
