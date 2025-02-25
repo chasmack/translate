@@ -15,13 +15,16 @@ from google.cloud import texttospeech
 PROJECT_ID = "first-gc-tts-project"
 PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 
+# Google imposed limit on XML data length
+XML_CHARACTER_LIMIT = 5000
+
 # Audio player
 MPV_EXEC = ['/usr/bin/mpv', '-', '--really-quiet']
 
 # Default voice names
 VOICE_RUSSIAN_A = "ru-RU-Wavenet-A"
 VOICE_RUSSIAN_B = "ru-RU-Wavenet-B"
-VOICE_ENGLISH = "en-US-Standard-C"
+VOICE_ENGLISH = "en-US-Wavenet-J"
 
 # Delays between media elements
 BREAK_RUSSIAN_A = '650ms'
@@ -131,6 +134,10 @@ def make_lesson(args):
                       method='xml',
                       xml_declaration=True)
 
+    xml_len = len(xml)
+    if xml_len > XML_CHARACTER_LIMIT:
+        raise RuntimeError(f'XML character limit exceeded: output: {xml_len} limit:{XML_CHARACTER_LIMIT}')
+
     if args.verbose:
         print(xml + '\n')
 
@@ -146,11 +153,11 @@ def make_lesson(args):
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.PIPE)
 
-        print("Playing results...  ", end='', flush=True)
+        print("Playing results...", end='', flush=True)
         proc_out = proc.communicate(input=response.audio_content)
         stderr = proc_out[1]
 
-        print("Done.")
+        print("\nDone.")
 
         if stderr:
             print(f"Error: {stderr.decode('utf-8')}")
