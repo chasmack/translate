@@ -64,16 +64,16 @@ def make_lesson(args):
         'volume_gain_db': args.volume_gain_db,
     }
 
-    match args.outfile[-3:].upper():
-        case 'MP3' | '-':
-            # Generate an mp3 file for the mpv player
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
-        case 'WAV':
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.LINEAR16
-        case 'OGG':
-            config_params['audio_encoding'] = texttospeech.AudioEncoding.OGG_OPUS
-        case _:
-            raise ValueError(f"Invalid encoding format: {args.outfile}")
+    file_ext = args.outfile[-3:].upper()
+    if file_ext in ('MP3', '-'):
+        # Generate an mp3 file for the mpv player
+        config_params['audio_encoding'] = texttospeech.AudioEncoding.MP3
+    elif file_ext == 'WAV':
+        config_params['audio_encoding'] = texttospeech.AudioEncoding.LINEAR16
+    elif file_ext == 'OGG':
+        config_params['audio_encoding'] = texttospeech.AudioEncoding.OGG_OPUS
+    else:
+        raise ValueError(f"Invalid encoding format: {args.outfile}")
 
     audio_config = texttospeech.AudioConfig(mapping=config_params)
 
@@ -136,7 +136,7 @@ def make_lesson(args):
 
     xml_len = len(xml)
     if xml_len > XML_CHARACTER_LIMIT:
-        raise RuntimeError(f'XML character limit exceeded: output: {xml_len} limit:{XML_CHARACTER_LIMIT}')
+        raise RuntimeError(f'XML character limit exceeded: output: {xml_len}, limit:{XML_CHARACTER_LIMIT}')
 
     if args.verbose:
         print(xml + '\n')
