@@ -1,12 +1,17 @@
 TRANSLATE := /home/charlie/dev/translate/
 VENV := $(TRANSLATE).venv/
-VOCAB := $(TRANSLATE)src/vocab.py
-ARGS := --speaking_rate 0.85 --pitch -2 --volume_gain_db +3
+VOCAB := $(TRANSLATE)src/anki-vocab.py
+ARGS := --romanize --soundfile_prefix RT_VOCAB
 
-srcfiles := $(wildcard *.txt)
-mp3files := $(srcfiles:.txt=.mp3)
+SRC_FILES := $(wildcard *.rus)
 
-all: $(mp3files)
+OUT_FILES = $(SRC_FILES:.rus=.txt)
 
-%.mp3: %.txt
+all: $(OUT_FILES)
+
+%.txt: %.rus
 	. $(VENV)bin/activate; python $(VOCAB) $< $@ $(ARGS)
+
+show:
+	@echo "Source files: $(SRC_FILES)"
+	@echo "Output files: $(OUT_FILES)"

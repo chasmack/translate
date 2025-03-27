@@ -18,5 +18,13 @@
                 "data/rt-vocab.txt", 
             ]
         },
+        {
+            "name": "Python Debugger: update-vocab.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/update-vocab.py",
+            "console": "integratedTerminal",
+            "args": [ ]
+        },
     ]
 }
