@@ -24,7 +24,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/update-vocab.py",
             "console": "integratedTerminal",
-            "args": [ ]
+            "env": {
+                    "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
+                    "OAUTH2_TOKEN": "/home/charlie/dev/translate/credentials/token.json"
+                },
         },
     ]
 }
