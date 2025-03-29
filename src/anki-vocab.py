@@ -33,11 +33,13 @@ PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 
 # The default Anki media folder. Override with -m option
 ANKI_MEDIA_FOLDER = '/home/charlie/.local/share/Anki2/Charlie/collection.media'
+# Anki note type for text import.
+ANKI_NOTETYPE = 'RT Vocab'
 
 
 def translate_text(texts, outfile, romanize, 
                    soundfile_folder, soundfile_prefix, soundfile_index):
-
+    
     # initialize the clients and request parameters
     xlt_client = translate.TranslationServiceClient()
 
@@ -100,13 +102,15 @@ def translate_text(texts, outfile, romanize,
 
         records.append(record)
 
-    with open(outfile, mode='wt', encoding='utf-8') as f:
-        f.write('\n'.join(records))
+    if len(records) > 0:
+        with open(outfile, mode='wt', encoding='utf-8') as f:
+            f.write(f"#notetype:{ANKI_NOTETYPE}\n")
+            f.write('\n'.join(records))
 
-    print(f"{len(records)} Anki note records created.")
+        print(f"{os.path.basename(outfile)}: {len(records)} Anki notes created.")
 
 
-if __name__ == '__main__':
+def main():
 
     parser = argparse.ArgumentParser(
         description="Translate Russian words and phrases into English"
@@ -140,6 +144,10 @@ if __name__ == '__main__':
             if line.startswith('#') or len(line) == 0:
                 continue
             russian_texts.append(line)
+
+    if len(russian_texts) == 0:
+        print(f"{os.path.basename(args.russian_textfile)}: Nothing to do.")
+        return
 
     # remove duplicates
     russian_texts = list(dict.fromkeys(russian_texts).keys())
@@ -175,3 +183,8 @@ if __name__ == '__main__':
                    soundfile_folder=args.anki_media_folder,
                    soundfile_prefix=args.soundfile_prefix,
                    soundfile_index=args.soundfile_index)
+
+
+if __name__ == '__main__':
+
+    main()

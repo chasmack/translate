@@ -54,6 +54,8 @@ Functions:
     Google Drive folder.
   - update_vocab(service, files): Compares and synchronizes files between
     Google Drive and the local file system.
+  - export_drive_file(service, drive_file, out_file): Exports a Google Docs
+    file.
   - main(): Orchestrates the overall process of folder navigation, file
     listing, and synchronization.
 
@@ -153,6 +155,7 @@ def get_files_in_folder(service, folder_id):
     files = []
     page_token = None
     q = f"'{folder_id}' in parents"
+    q += " and trashed = false"
     q += " and mimeType = 'application/vnd.google-apps.document'"
 
     while True:
@@ -162,6 +165,7 @@ def get_files_in_folder(service, folder_id):
                 q=q,
                 spaces="drive",
                 fields="nextPageToken, files(id, name, modifiedTime)",
+                orderBy="modifiedTime",
                 pageToken=page_token,
             )
             .execute()
@@ -199,27 +203,41 @@ def update_vocab(service, files):
             print(f"{drive_file_name}: ", end="")
             if drive_mod_time > fs_mod_time:
                 print("Updating...")
-                with open(fs_file_path, "wb") as f:
-                    fh = service.files().export_media(
-                            fileId=drive_file["id"], mimeType="text/plain"
-                        ).execute()
-                    f.write(fh)
+                export_drive_file(service, drive_file, fs_file_path)
             else:
                 print("Up to date")
 
-            print(f"  drive: {drive_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-            print(f"  local: {fs_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            # print(f"  drive: {drive_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            # print(f"  local: {fs_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
         else:
             print(f"{drive_file_name}: Downloading...")
-            with open(fs_file_path, "wb") as f:
-                fh = service.files().export_media(
-                        fileId=drive_file["id"], mimeType="text/plain"
-                    ).execute()
-                f.write(fh)
+            export_drive_file(service, drive_file, fs_file_path)
+
+            # with open(fs_file_path, "wb") as f:
+            #     fh = service.files().export_media(
+            #             fileId=drive_file["id"], mimeType="text/plain"
+            #         ).execute()
+            #     f.write(fh)
 
             # print(f"  drive: {drive_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
             # print(f"  local: None")
+
+
+def export_drive_file(service, drive_file, out_file):
+    """Export a Google Docs file to a plain text file."""
+
+    content = service.files().export_media(
+            fileId=drive_file["id"], 
+            mimeType="text/plain"
+        ).execute()
+    
+    if content.startswith(b'\xef\xbb\xbf'):
+        content = content[3:]  # Remove the BOM
+    
+    if len(content) > 0:
+        with open(out_file, "wb") as f:
+            f.write(content)
 
 
 def main():
