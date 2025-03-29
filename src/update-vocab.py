@@ -183,8 +183,12 @@ def update_vocab(service, files):
         fs_file_path = os.path.join(FS_PATH, fs_file_name)
 
         # Google Drive modification time strings are UTC.
+        
         drive_mod_time_str = drive_file['modifiedTime']
-        drive_mod_time = datetime.fromisoformat(drive_mod_time_str)
+        # Prior to Python 3.11 fromisoformat() did not support UTC offsets.
+        # drive_mod_time = datetime.fromisoformat(drive_mod_time_str, tz=timezone.utc)
+        iso_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+        drive_mod_time = datetime.strptime(drive_mod_time_str, iso_format)
 
         if os.path.exists(fs_file_path) and os.path.isfile(fs_file_path):
 
@@ -203,8 +207,8 @@ def update_vocab(service, files):
             else:
                 print("Up to date")
 
-            # print(f"  drive: {drive_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-            # print(f"  local: {fs_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            print(f"  drive: {drive_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            print(f"  local: {fs_mod_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
         else:
             print(f"{drive_file_name}: Downloading...")
