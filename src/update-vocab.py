@@ -69,8 +69,8 @@ Notes:
         invalid or missing.
 """
 
-from datetime import datetime, timezone
 import os
+from datetime import datetime, timezone
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
