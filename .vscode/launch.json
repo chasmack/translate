@@ -13,7 +13,7 @@
             "args": [
                 "--romanize", 
                 "--anki_media_folder", "data",
-                "--soundfile_prefix", "rt-vocab",
+                "--soundfile_prefix", "RT_VOCAB",
                 "data/rt-vocab.rus", 
                 "data/rt-vocab.txt", 
             ]
