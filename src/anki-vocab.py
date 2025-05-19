@@ -91,12 +91,14 @@ PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 
 # The default Anki media folder. Override with -m option
 ANKI_MEDIA_FOLDER = "/home/charlie/.local/share/Anki2/Charlie/collection.media"
-# Anki note type for text import.
+# Anki note type for text import
 ANKI_NOTETYPE = "RT Vocab"
+# Default parent deck
+ANKI_PARENT_DECK = "Russian"
 
 
 def translate_text(
-    texts, outfile, romanize, soundfile_folder, soundfile_prefix, soundfile_index
+    texts, outfile, romanize, notetype, deckname, soundfile_folder, soundfile_prefix, soundfile_index
 ):
     """Translate, romanize, and generate audio for a list of Russian texts."""
 
@@ -116,8 +118,11 @@ def translate_text(
     records = []
     for text in texts:
 
-        # initialize a new record with the Russian text
-        record = f"{text};"
+        # initialize a new record with the deck name
+        record = f"{deckname};"
+
+        # add the Russian text
+        record += f"{text};"
 
         if romanize:
             # generate romanized text
@@ -164,7 +169,9 @@ def translate_text(
 
     if len(records) > 0:
         with open(outfile, mode="wt", encoding="utf-8") as f:
-            f.write(f"#notetype:{ANKI_NOTETYPE}\n")
+            f.write(f"#separator:Semicolon\n")
+            f.write(f"#notetype:{notetype}\n")
+            f.write(f"#deck column:1\n")
             f.write("\n".join(records))
 
         print(f"{os.path.basename(outfile)}: {len(records)} Anki notes created.")
@@ -192,7 +199,14 @@ def main():
         help="add romanized text to the record if available",
     )
     parser.add_argument(
-        "--anki_media_folder", "-m", help="alternate media folder for sound files"
+        "--anki_media_folder",
+        "-m", 
+        help="alternate media folder for sound files"
+    )
+    parser.add_argument(
+        "--anki_deck_name",
+        "-d",
+        help="full deck name including parent"
     )
     parser.add_argument(
         "--soundfile_prefix",
@@ -232,6 +246,14 @@ def main():
     if args.anki_media_folder is None:
         args.anki_media_folder = ANKI_MEDIA_FOLDER
 
+    # Anki deck name for the imported cards
+    if args.anki_deck_name is None:
+        # derive deck name from file name using default parent deck
+        deck = os.path.basename(args.anki_outfile).replace("_", " ")
+        deck = deck.replace("_", " ")
+        deck = os.path.splitext(deck)[0]
+        args.anki_deck_name = "::".join([ ANKI_PARENT_DECK, deck])
+
     # initialize the soundfile index
     if args.soundfile_prefix is not None and args.soundfile_index is None:
 
@@ -257,6 +279,8 @@ def main():
         texts=russian_texts,
         outfile=args.anki_outfile,
         romanize=args.romanize,
+        notetype=ANKI_NOTETYPE,
+        deckname=args.anki_deck_name,
         soundfile_folder=args.anki_media_folder,
         soundfile_prefix=args.soundfile_prefix,
         soundfile_index=args.soundfile_index,

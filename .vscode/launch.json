@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: anki-vocab",
+            "name": "Python Debugger: anki-vocab.py",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/anki-vocab.py",
