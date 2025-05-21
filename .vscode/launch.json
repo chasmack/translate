@@ -5,29 +5,42 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: anki-vocab.py",
+            "name": "Python Debugger: anki_vocab.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/anki-vocab.py",
+            "program": "${workspaceFolder}/src/anki_vocab.py",
             "console": "integratedTerminal",
             "args": [
-                "--romanize", 
-                "--anki_media_folder", "data",
-                "--soundfile_prefix", "RT_VOCAB",
-                "data/rt-vocab.rus", 
-                "data/rt-vocab.txt", 
+                "--romanize",
+                "--anki_media_folder",
+                "data",
+                "--soundfile_prefix",
+                "RT_VOCAB",
+                "data/rt_vocab.rus",
+                "data/rt_vocab.txt",
             ]
         },
         {
-            "name": "Python Debugger: update-vocab.py",
+            "name": "Python Debugger: update_vocab.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/update-vocab.py",
+            "program": "${workspaceFolder}/src/update_vocab.py",
             "console": "integratedTerminal",
             "env": {
-                    "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
-                    "OAUTH2_TOKEN": "/home/charlie/dev/translate/credentials/token.json"
-                },
+                "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
+                "OAUTH2_TOKEN": "/home/charlie/dev/translate/credentials/token.json"
+            },
+        },
+        {
+            "name": "Python Debugger: update_anki.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/update_anki.py",
+            "console": "integratedTerminal",
+            "env": {
+                "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
+                "OAUTH2_TOKEN": "/home/charlie/dev/translate/credentials/token.json"
+            },
         },
     ]
 }

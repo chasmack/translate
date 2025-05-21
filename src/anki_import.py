@@ -1,5 +1,5 @@
 """
-Module: anki-vocab.py
+Module: anki_import.py
 
 Description:
     This module provides functionality to create Anki flashcard notes from a
@@ -98,7 +98,13 @@ ANKI_PARENT_DECK = "Russian"
 
 
 def translate_text(
-    texts, outfile, romanize, notetype, deckname, soundfile_folder, soundfile_prefix, soundfile_index
+    texts,
+    outfile,
+    deckname=None,
+    romanize=False,
+    soundfile_prefix=None,
+    soundfile_folder=None,
+    soundfile_index=None,
 ):
     """Translate, romanize, and generate audio for a list of Russian texts."""
 
@@ -114,6 +120,37 @@ def translate_text(
     tts_audio_config = texttospeech.AudioConfig(
         audio_encoding=texttospeech.AudioEncoding.MP3,
     )
+
+    # Anki deck name for the imported cards
+    if deckname is None:
+        # derive deck name from file name using default parent deck
+        deckname = os.path.basename(outfile).replace("_", " ")
+        deckname = deckname.replace("_", " ")
+        deckname = os.path.splitext(deckname)[0]
+        deckname = "::".join([ANKI_PARENT_DECK, deckname])
+
+    if soundfile_prefix is not None:
+
+        # Anki media folder for sound files
+        if soundfile_folder is None:
+            soundfile_folder = ANKI_MEDIA_FOLDER
+
+        # initialize the soundfile index
+        if soundfile_index is None:
+
+            # locate the next available soundfile index
+            index = 1
+            pattern = os.path.join(soundfile_folder, f"{soundfile_prefix}-*")
+            for f in glob.glob(pattern):
+                i = re.sub(
+                    r".*-(\d+)\.mp3$", r"\1", os.path.basename(f), flags=re.IGNORECASE
+                )
+                if not i.isdigit():
+                    continue
+                i = int(i)
+                if i >= index:
+                    index = i + 1
+            soundfile_index = index
 
     records = []
     for text in texts:
@@ -170,7 +207,7 @@ def translate_text(
     if len(records) > 0:
         with open(outfile, mode="wt", encoding="utf-8") as f:
             f.write(f"#separator:Semicolon\n")
-            f.write(f"#notetype:{notetype}\n")
+            f.write(f"#notetype:{ANKI_NOTETYPE}\n")
             f.write(f"#deck column:1\n")
             f.write("\n".join(records))
 
@@ -199,14 +236,10 @@ def main():
         help="add romanized text to the record if available",
     )
     parser.add_argument(
-        "--anki_media_folder",
-        "-m", 
-        help="alternate media folder for sound files"
+        "--anki_media_folder", "-m", help="alternate media folder for sound files"
     )
     parser.add_argument(
-        "--anki_deck_name",
-        "-d",
-        help="full deck name including parent"
+        "--anki_deck_name", "-d", help="full deck name including parent"
     )
     parser.add_argument(
         "--soundfile_prefix",
@@ -242,47 +275,17 @@ def main():
     # remove duplicates
     russian_texts = list(dict.fromkeys(russian_texts).keys())
 
-    # Anki media folder for sound files
-    if args.anki_media_folder is None:
-        args.anki_media_folder = ANKI_MEDIA_FOLDER
-
-    # Anki deck name for the imported cards
-    if args.anki_deck_name is None:
-        # derive deck name from file name using default parent deck
-        deck = os.path.basename(args.anki_outfile).replace("_", " ")
-        deck = deck.replace("_", " ")
-        deck = os.path.splitext(deck)[0]
-        args.anki_deck_name = "::".join([ ANKI_PARENT_DECK, deck])
-
-    # initialize the soundfile index
-    if args.soundfile_prefix is not None and args.soundfile_index is None:
-
-        # locate the next available soundfile index
-        index = 1
-        pattern = os.path.join(args.anki_media_folder, f"{args.soundfile_prefix}-*")
-        for f in glob.glob(pattern):
-            i = re.sub(
-                r".*-(\d+)\.mp3$", r"\1", os.path.basename(f), flags=re.IGNORECASE
-            )
-            if not i.isdigit():
-                continue
-            i = int(i)
-            if i >= index:
-                index = i + 1
-        args.soundfile_index = index
-
     if args.verbose:
         print(args)
         print(russian_texts)
 
     translate_text(
-        texts=russian_texts,
-        outfile=args.anki_outfile,
-        romanize=args.romanize,
-        notetype=ANKI_NOTETYPE,
+        russian_texts,
+        args.anki_outfile,
         deckname=args.anki_deck_name,
-        soundfile_folder=args.anki_media_folder,
+        romanize=args.romanize,
         soundfile_prefix=args.soundfile_prefix,
+        soundfile_folder=args.anki_media_folder,
         soundfile_index=args.soundfile_index,
     )
 

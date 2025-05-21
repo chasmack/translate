@@ -1,5 +1,5 @@
 """
-Module: update-vocab.py
+Module: update_vocab.py
 
 Description:
     This module provides functionality to synchronize Russian vocabulary files
