@@ -68,8 +68,13 @@ if not OAUTH2_CREDS or not OAUTH2_TOKEN:
 DRIVE_PATH = "/Russian/Anki Vocab/"
 FS_PATH = "/home/charlie/russian/anki-vocab/"
 
-ANKI_PARENT_DECK = "Russian"
-ANKI_SOUNDFILE_PREFIX = "RT_VOCAB"
+BRAIDEN = True
+if BRAIDEN:
+    ANKI_PARENT_DECK = "Russian - Braiden"
+    ANKI_SOUNDFILE_PREFIX = "BRAIDEN_VOCAB"
+else:
+    ANKI_PARENT_DECK = "Russian"
+    ANKI_SOUNDFILE_PREFIX = "RT_VOCAB"
 
 
 def get_service():
