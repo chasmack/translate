@@ -245,9 +245,7 @@ def main():
     parser.add_argument(
         "--anki_deck_name", "-d", help="full deck name including parent"
     )
-    parser.add_argument(
-        "--anki_note_type", "-n", help="note type"
-    )
+    parser.add_argument("--anki_note_type", "-n", help="note type")
     parser.add_argument(
         "--soundfile_prefix",
         "-p",
@@ -273,7 +271,8 @@ def main():
             line = line.strip()
             if line.startswith("#") or len(line) == 0:
                 continue
-            russian_texts.append(line)
+            for word in line.split(";"):
+                russian_texts.append(word.strip())
 
     if len(russian_texts) == 0:
         print(f"{os.path.basename(args.russian_textfile)}: Nothing to do.")
