@@ -46,7 +46,8 @@ Usage:
         media folder, etc.).
 
     Example:
-        python anki-vocab.py russian_words.txt anki_notes.txt -r -p vocab -m /path/to/anki/media
+        python anki-vocab.py russian_words.txt anki_notes.txt \
+            -r -p vocab -m /path/to/anki/media
 
     -   `russian_words.txt`: Input file with Russian words/phrases.
     -   `anki_notes.txt`: Output file for Anki notes.
@@ -91,16 +92,19 @@ PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 
 # The default Anki media folder. Override with -m option
 ANKI_MEDIA_FOLDER = "/home/charlie/.local/share/Anki2/Charlie/collection.media"
+
 # Anki note type for text import
-ANKI_NOTETYPE = "RT Vocab"
+# ANKI_NOTETYPE = "RT Vocab"
+
 # Default parent deck
-ANKI_PARENT_DECK = "Russian"
+# ANKI_PARENT_DECK = "Russian"
 
 
 def translate_text(
     texts,
     outfile,
-    deckname=None,
+    deckname,
+    notetype,
     romanize=False,
     soundfile_prefix=None,
     soundfile_folder=None,
@@ -122,12 +126,12 @@ def translate_text(
     )
 
     # Anki deck name for the imported cards
-    if deckname is None:
-        # derive deck name from file name using default parent deck
-        deckname = os.path.basename(outfile).replace("_", " ")
-        deckname = deckname.replace("_", " ")
-        deckname = os.path.splitext(deckname)[0]
-        deckname = "::".join([ANKI_PARENT_DECK, deckname])
+    # if deckname is None:
+    #     # derive deck name from file name using default parent deck
+    #     deckname = os.path.basename(outfile).replace("_", " ")
+    #     deckname = deckname.replace("_", " ")
+    #     deckname = os.path.splitext(deckname)[0]
+    #     deckname = "::".join([ANKI_PARENT_DECK, deckname])
 
     if soundfile_prefix is not None:
 
@@ -207,7 +211,7 @@ def translate_text(
     if len(records) > 0:
         with open(outfile, mode="wt", encoding="utf-8") as f:
             f.write(f"#separator:Semicolon\n")
-            f.write(f"#notetype:{ANKI_NOTETYPE}\n")
+            f.write(f"#notetype:{notetype}\n")
             f.write(f"#deck column:1\n")
             f.write("\n".join(records))
 
@@ -240,6 +244,9 @@ def main():
     )
     parser.add_argument(
         "--anki_deck_name", "-d", help="full deck name including parent"
+    )
+    parser.add_argument(
+        "--anki_note_type", "-n", help="note type"
     )
     parser.add_argument(
         "--soundfile_prefix",
@@ -283,6 +290,7 @@ def main():
         russian_texts,
         args.anki_outfile,
         deckname=args.anki_deck_name,
+        notetype=args.anki_note_type,
         romanize=args.romanize,
         soundfile_prefix=args.soundfile_prefix,
         soundfile_folder=args.anki_media_folder,

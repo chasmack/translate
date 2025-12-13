@@ -70,9 +70,11 @@ FS_PATH = "/home/charlie/russian/anki-vocab/"
 
 BRAIDEN = True
 if BRAIDEN:
+    ANKI_NOTETYPE = "Braiden Vocab"
     ANKI_PARENT_DECK = "Russian - Braiden"
     ANKI_SOUNDFILE_PREFIX = "BRAIDEN_VOCAB"
 else:
+    ANKI_NOTETYPE = "RT Vocab"
     ANKI_PARENT_DECK = "Russian"
     ANKI_SOUNDFILE_PREFIX = "RT_VOCAB"
 
@@ -264,6 +266,7 @@ def main():
                 file["words"],
                 file["localName"] + ".txt",
                 deckname="::".join([ANKI_PARENT_DECK, file["name"]]),
+                notetype=ANKI_NOTETYPE,
                 romanize=True,
                 soundfile_prefix=ANKI_SOUNDFILE_PREFIX,
             )
