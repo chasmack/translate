@@ -26,7 +26,7 @@ on the command line. A sequential numerical index is added to the sound filename
 A mechanism is provided allowing vocabulary files to be created and maintained 
 on Google Drive and downloaded to local storage for processing. New words and 
 phrases can be added to an existing vocabulary file and the processing will 
-will create import files for newly added content.
+create Anki import files for newly added content.
 
 Comments in the source text files are used as section names and added to the
 section field of the Anki notes. This can be used to create filtered decks used
