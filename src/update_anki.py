@@ -234,19 +234,25 @@ def get_drive_content(service, file):
 def parse_content(content):
     """Parse text for semicolon delimited words and phrases."""
 
-    # build a list of vocabulary words and phrases
+    # build a list of vocabulary words and phrases with tags
     words = []
+
+    # section headers added as tags
+    tags = ""
 
     for line in content.splitlines():
         line = line.strip()
-        if len(line) == 0 or line.startswith("#"):
+        if len(line) == 0:
+            continue
+        if line.startswith("#"):
+            tags = line[1:].strip()
             continue
 
         # split line at semicolons
         for word in line.split(";"):
             # watch for final semicolon
             if len(word) > 0:
-                words.append(word.strip())
+                words.append((word.strip(), tags))
 
     # remove duplicates
     words = list(dict.fromkeys(words).keys())

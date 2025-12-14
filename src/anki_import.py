@@ -81,6 +81,7 @@ import os
 import re
 import glob
 import argparse
+import html
 
 # Google Cloud Translation and Text-to-Speech libraries
 from google.cloud import translate_v3 as translate
@@ -159,6 +160,9 @@ def translate_text(
     records = []
     for text in texts:
 
+        # split out the tags
+        text, tags = text
+
         # initialize a new record with the deck name
         record = f"{deckname};"
 
@@ -201,10 +205,14 @@ def translate_text(
             parent=PROJECT_PARENT,
         )
         xlt_response = xlt_client.translate_text(request=xlt_request)
-        record += f"{xlt_response.translations[0].translated_text};"
+        # translated response can return semicolon terminated html escape sequences
+        record += f"{html.unescape(xlt_response.translations[0].translated_text)};"
 
         # add an empty field for Notes
         record += ";"
+
+        # append any tags
+        record += f"{tags};"
 
         records.append(record)
 
@@ -213,6 +221,7 @@ def translate_text(
             f.write(f"#separator:Semicolon\n")
             f.write(f"#notetype:{notetype}\n")
             f.write(f"#deck column:1\n")
+            f.write(f"#tags column:7\n")
             f.write("\n".join(records))
 
         print(f"{os.path.basename(outfile)}: {len(records)} Anki notes created.")
