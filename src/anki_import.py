@@ -160,8 +160,8 @@ def translate_text(
     records = []
     for text in texts:
 
-        # split out the tags
-        text, tags = text
+        # split out the section field
+        text, section = text
 
         # initialize a new record with the deck name
         record = f"{deckname};"
@@ -208,11 +208,11 @@ def translate_text(
         # translated response can return semicolon terminated html escape sequences
         record += f"{html.unescape(xlt_response.translations[0].translated_text)};"
 
-        # add an empty field for Notes
+        # add an empty field for notes
         record += ";"
 
-        # append any tags
-        record += f"{tags};"
+        # add the section field
+        record += f"{section};"
 
         records.append(record)
 
@@ -221,7 +221,6 @@ def translate_text(
             f.write(f"#separator:Semicolon\n")
             f.write(f"#notetype:{notetype}\n")
             f.write(f"#deck column:1\n")
-            f.write(f"#tags column:7\n")
             f.write("\n".join(records))
 
         print(f"{os.path.basename(outfile)}: {len(records)} Anki notes created.")
