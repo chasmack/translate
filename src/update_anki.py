@@ -65,18 +65,12 @@ OAUTH2_TOKEN = os.environ.get("OAUTH2_TOKEN")
 if not OAUTH2_CREDS or not OAUTH2_TOKEN:
     raise ValueError("OAUTH2_CREDS and OAUTH2_TOKEN environment variables not set.")
 
-DRIVE_PATH = "/Russian/Anki Vocab/"
-FS_PATH = "/home/charlie/russian/anki-vocab/"
+DRIVE_PATH = "/Russian/Vocab/"
+FS_PATH = "/home/charlie/russian/vocab/"
 
-BRAIDEN = True
-if BRAIDEN:
-    ANKI_NOTETYPE = "Braiden Vocab"
-    ANKI_PARENT_DECK = "Russian - Braiden"
-    ANKI_SOUNDFILE_PREFIX = "BRAIDEN_VOCAB"
-else:
-    ANKI_NOTETYPE = "RT Vocab"
-    ANKI_PARENT_DECK = "Russian"
-    ANKI_SOUNDFILE_PREFIX = "RT_VOCAB"
+ANKI_NOTETYPE = "Russian Vocab"
+ANKI_PARENT_DECK = "Russian Vocab"
+ANKI_SOUNDFILE_PREFIX = "RUSSIAN_VOCAB"
 
 
 def get_service():

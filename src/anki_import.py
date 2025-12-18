@@ -94,12 +94,6 @@ PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 # The default Anki media folder. Override with -m option
 ANKI_MEDIA_FOLDER = "/home/charlie/.local/share/Anki2/Charlie/collection.media"
 
-# Anki note type for text import
-# ANKI_NOTETYPE = "RT Vocab"
-
-# Default parent deck
-# ANKI_PARENT_DECK = "Russian"
-
 
 def translate_text(
     texts,
@@ -125,14 +119,6 @@ def translate_text(
     tts_audio_config = texttospeech.AudioConfig(
         audio_encoding=texttospeech.AudioEncoding.MP3,
     )
-
-    # Anki deck name for the imported cards
-    # if deckname is None:
-    #     # derive deck name from file name using default parent deck
-    #     deckname = os.path.basename(outfile).replace("_", " ")
-    #     deckname = deckname.replace("_", " ")
-    #     deckname = os.path.splitext(deckname)[0]
-    #     deckname = "::".join([ANKI_PARENT_DECK, deckname])
 
     if soundfile_prefix is not None:
 
@@ -242,6 +228,10 @@ def main():
         "anki_outfile", help="semicolon delimited note file for Anki text import"
     )
     parser.add_argument(
+        "--anki_deck_name", "-d", required=True, help="full deck name including parent"
+    )
+    parser.add_argument("--anki_note_type", "-n", required=True, help="note type")
+    parser.add_argument(
         "--romanize",
         "-r",
         action="store_true",
@@ -250,10 +240,6 @@ def main():
     parser.add_argument(
         "--anki_media_folder", "-m", help="alternate media folder for sound files"
     )
-    parser.add_argument(
-        "--anki_deck_name", "-d", help="full deck name including parent"
-    )
-    parser.add_argument("--anki_note_type", "-n", help="note type")
     parser.add_argument(
         "--soundfile_prefix",
         "-p",
