@@ -1,5 +1,5 @@
 """
-Module: update-anki.py
+Module: anki_update.py
 
 Description:
     This module provides functionality to synchronize Russian vocabulary files
@@ -54,7 +54,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from anki_import import translate_text
+from anki_import_ai import translate_text
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]

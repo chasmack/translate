@@ -21,10 +21,10 @@
             ]
         },
         {
-            "name": "Python Debugger: update_vocab.py",
+            "name": "Python Debugger: anki_update.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/update_vocab.py",
+            "program": "${workspaceFolder}/src/anki_update.py",
             "console": "integratedTerminal",
             "env": {
                 "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
@@ -32,15 +32,11 @@
             },
         },
         {
-            "name": "Python Debugger: update_anki.py",
+            "name": "Python Debugger: genai.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/update_anki.py",
+            "program": "${workspaceFolder}/src/genai.py",
             "console": "integratedTerminal",
-            "env": {
-                "OAUTH2_CREDS": "/home/charlie/dev/translate/credentials/credentials.json",
-                "OAUTH2_TOKEN": "/home/charlie/dev/translate/credentials/token.json"
-            },
         },
     ]
 }
