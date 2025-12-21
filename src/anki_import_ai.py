@@ -3,27 +3,30 @@ Module: anki_import_ai.py
 
 Description:
     This module provides functionality to create Anki flashcard notes from a
-    list of Russian words and phrases. It leverages the Google Cloud Translation
-    and Text-to-Speech APIs to generate English translations, romanized
+    list of Russian words and phrases. It leverages the Google Gemini AI
+    and Text-to-Speech (TTS) APIs to generate English translations, romanized
     representations, and audio clips for the Russian text. The output is a
     semicolon-delimited text file that can be directly imported into Anki.
 
 Key Features:
-    - Input Processing: Reads a text file containing Russian words and phrases,
-      one per line. Ignores blank lines and lines starting with '#'.
-    - Translation: Uses the Google Cloud Translation API to translate Russian
+    - Spelling: Russian spelling is checked and spelling errors are flagged.
+    - Stressed Vowels: A copy of the Russian test is returned with accute
+      accents (U+0301) on stressed vowels.
+    - Translation: Uses the Google Gemini AI API to translate Russian
       text into English.
-    - Romanization: Optionally uses the Google Cloud Translation API to
-      generate a romanized representation of the Russian text.
-    - Text-to-Speech: Optionally uses the Google Cloud Text-to-Speech API to
+    - Romanization: Uses the Google Gemini AI API to generate a BGN/PCGN style
+      romanized representation of the Russian text.
+    - Text-to-Speech: Optionally uses the Google Cloud TTS API to
       create audio clips (MP3 files) of the Russian text.
     - Anki Note Generation: Creates semicolon-delimited records suitable for
       importing into Anki. Each record contains the following fields:
-        - Russian: The original Russian word or phrase.
-        - Romanize: The romanized representation (if enabled).
-        - Audio: A link to the generated audio clip (if enabled).
-        - English: The English translation.
-        - Notes: An empty field for additional notes.
+        - russian: The original Russian word or phrase.
+        - stressed_russian: The original Russian with accute accents.
+        - romanize: The romanized representation (if enabled).
+        - audio: A link to the generated audio clip (if enabled).
+        - english: The English translation.
+        - notes: An empty field for additional notes.
+        - section: An optional category for the input texts.
     - Sound File Management: Saves generated audio clips to a specified
       directory (defaulting to the Anki media folder). Automatically manages
       sound file names with a prefix and numerical index.
@@ -32,8 +35,12 @@ Key Features:
       configuration and execution.
 
 Dependencies:
-    - google-cloud-translate
+    - google-genai
     - google-cloud-texttospeech
+    - pydantic
+    - typing
+    - html
+    - json
     - os
     - re
     - glob
@@ -82,9 +89,12 @@ import re
 import glob
 import argparse
 import html
+import json
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
-# Google Cloud Translation and Text-to-Speech libraries
-from google.cloud import translate_v3 as translate
+# Google Gemini AI and Text-to-Speech libraries
+from google import genai
 from google.cloud import texttospeech
 
 # Google Cloud project ID for authorization
@@ -93,6 +103,76 @@ PROJECT_PARENT = f"projects/{PROJECT_ID}/locations/global"
 
 # The default Anki media folder. Override with -m option
 ANKI_MEDIA_FOLDER = "/home/charlie/.local/share/Anki2/Charlie/collection.media"
+
+# Location og the API key and name of the Gemini AI model
+GEMINI_API_KEY = "/home/charlie/dev/translate/credentials/gemini_translate_key.txt"
+GEMINI_AI_MODEL = "gemini-2.5-pro"
+
+
+# Data schema for the Anki base note. Only fields required for AI processing
+# are included here to keep down clutter that could confule the AI.
+# The stressed_russian, romanize and english fields are optional. If a spelling
+# error is detected Gemini is requested to leave these fields unpopulated.
+class AnkiBaseNote(BaseModel):
+    russian: str = Field(
+        description="The original unmodified russian text provided in the input."
+    )
+    section: str = Field(
+        description="Copy of the unmodified section name provided in the input.",
+    )
+    stressed_russian: Optional[str] = Field(
+        default=None,
+        description="The russian text input with acute accents on stressed vowels.",
+    )
+    romanize: Optional[str] = Field(
+        default=None, description="Latin transliteration using the BGN/PCGN system."
+    )
+    english: Optional[str] = Field(
+        default=None, description="The English translation of the russian text."
+    )
+    spelling_error: Optional[str] = Field(
+        default=None,
+        description="If a spelling error is detected in russian text, describe it. Otherwise, null.",
+    )
+
+
+# A list of Anki base notes for JSON schema defination and return data validation
+class AnkiNoteList(BaseModel):
+    notes: List[AnkiBaseNote]
+
+
+# Model for the full Anki note type.
+class AnkiNote(AnkiBaseNote):
+    audio: Optional[str] = Field(
+        default=None,
+        description="The filename of the mp3 audio clip saved to the Anki media folder.",
+    )
+    notes: Optional[str] = Field(
+        default=None,
+        description="Supplemental information about usage of the Russian.",
+    )
+
+
+system_instruction = """
+    You are a Russian linguistic expert. Process the provided JSON list of Russian words and phrases.
+
+    RULES:
+    1. PRIMARY CHECK: For each item, verify the spelling of 'russian'.
+    2. IF MISSPELLED: 
+       - Populate 'spelling_error' with a brief explanation.
+       - You MUST leave 'stressed_russian', 'romanize', and 'english' unpopulated.
+       - You MUST still echo the original 'russian' and 'section' fields.
+    3. IF CORRECT:
+       - Set 'spelling_error' to a JSON null.
+       - STRESSED: Populate 'stressed_russian' using the combining acute accent (U+0301).
+       - ROMANIZE: Use BGN/PCGN style (e.g., 'щ'->'shch', 'й'->'y', 'ё'->'yo', 'ь'->').
+       - TRANSLATE: Provide the 'english' translation.
+    4. ECHO: Always return the 'section' and 'russian' fields exactly as they were received.
+"""
+
+
+class APIConfigError(Exception):
+    pass
 
 
 def translate_text(
@@ -108,7 +188,16 @@ def translate_text(
     """Translate, romanize, and generate audio for a list of Russian texts."""
 
     # initialize the clients and request parameters
-    xlt_client = translate.TranslationServiceClient()
+
+    try:
+        with open(GEMINI_API_KEY, "r", encoding="utf-8") as f:
+            api_key = f.read()
+    except FileNotFoundError as e:
+        raise APIConfigError(f"Error: API Key File '{GEMINI_API_KEY}' not found") from e
+    except Exception as e:
+        raise APIConfigError(f"Error: API Key File error: {e}") from e
+
+    ai_client = genai.Client(api_key=api_key)
 
     tts_client = texttospeech.TextToSpeechClient()
     tts_voice = texttospeech.VoiceSelectionParams(
@@ -143,29 +232,16 @@ def translate_text(
                     index = i + 1
             soundfile_index = index
 
-    records = []
+    note_list = []
     for text in texts:
 
         # split out the section field
         text, section = text
 
-        # initialize a new record with the deck name
-        record = f"{deckname};"
-
-        # add the Russian text
-        record += f"{text};"
-
         if romanize:
-            # generate romanized text
-            romanize_request = translate.RomanizeTextRequest(
-                contents=[text],
-                source_language_code="ru",
-                parent=PROJECT_PARENT,
-            )
-            romanize_response = xlt_client.romanize_text(request=romanize_request)
-            record += f"{romanize_response.romanizations[0].romanized_text};"
+            note += f"{romanize_response.romanizations[0].romanized_text};"
         else:
-            record += ";"
+            note += ";"
 
         if soundfile_prefix:
 
@@ -178,38 +254,36 @@ def translate_text(
             soundfile = f"{soundfile_prefix}-{soundfile_index:04}.mp3"
             with open(os.path.join(soundfile_folder, soundfile), mode="wb") as f:
                 f.write(tts_response.audio_content)
-            record += f"[sound:{soundfile}];"
+            note += f"[sound:{soundfile}];"
             soundfile_index += 1
         else:
-            record += ";"
+            note += ";"
 
-        # make the translation request
-        xlt_request = translate.TranslateTextRequest(
-            contents=[text],
-            source_language_code="ru",
-            target_language_code="en-US",
-            parent=PROJECT_PARENT,
-        )
-        xlt_response = xlt_client.translate_text(request=xlt_request)
         # translated response can return semicolon terminated html escape sequences
-        record += f"{html.unescape(xlt_response.translations[0].translated_text)};"
+        note += f"{html.unescape(xlt_response.translations[0].translated_text)};"
+
+        # initialize a new record with the deck name
+        note = f"{deckname};"
+
+        # add the Russian text
+        note += f"{text};"
 
         # add an empty field for notes
-        record += ";"
+        note += ";"
 
         # add the section field
-        record += f"{section};"
+        note += f"{section};"
 
-        records.append(record)
+        note_list.append(note)
 
-    if len(records) > 0:
+    if len(note_list) > 0:
         with open(outfile, mode="wt", encoding="utf-8") as f:
             f.write(f"#separator:Semicolon\n")
             f.write(f"#notetype:{notetype}\n")
             f.write(f"#deck column:1\n")
-            f.write("\n".join(records))
+            f.write("\n".join(note_list))
 
-        print(f"{os.path.basename(outfile)}: {len(records)} Anki notes created.")
+        print(f"{os.path.basename(outfile)}: {len(note_list)} Anki notes created.")
 
 
 def main():
