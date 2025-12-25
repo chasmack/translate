@@ -88,7 +88,8 @@ import os
 import re
 import glob
 import argparse
-import html
+import traceback
+import time
 import json
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -107,6 +108,9 @@ ANKI_MEDIA_FOLDER = "/home/charlie/.local/share/Anki2/Charlie/collection.media"
 # Location og the API key and name of the Gemini AI model
 GEMINI_API_KEY = "/home/charlie/dev/translate/credentials/gemini_translate_key.txt"
 GEMINI_AI_MODEL = "gemini-2.5-pro"
+GEMINI_INPUT_CHUNK_SIZE = 25
+
+DEBUG = False
 
 
 # Data schema for the Anki base note. Only fields required for AI processing
@@ -144,34 +148,37 @@ class AnkiNoteList(BaseModel):
 # Model for the full Anki note type.
 class AnkiNote(AnkiBaseNote):
     audio: Optional[str] = Field(
-        default=None,
+        default="",
         description="The filename of the mp3 audio clip saved to the Anki media folder.",
     )
     notes: Optional[str] = Field(
-        default=None,
+        default="",
         description="Supplemental information about usage of the Russian.",
     )
 
 
 system_instruction = """
-    You are a Russian linguistic expert. Process the provided JSON list of Russian words and phrases.
-
-    RULES:
-    1. PRIMARY CHECK: For each item, verify the spelling of 'russian'.
-    2. IF MISSPELLED: 
-       - Populate 'spelling_error' with a brief explanation.
-       - You MUST leave 'stressed_russian', 'romanize', and 'english' unpopulated.
-       - You MUST still echo the original 'russian' and 'section' fields.
-    3. IF CORRECT:
-       - Set 'spelling_error' to a JSON null.
-       - STRESSED: Populate 'stressed_russian' using the combining acute accent (U+0301).
-       - ROMANIZE: Use BGN/PCGN style (e.g., 'щ'->'shch', 'й'->'y', 'ё'->'yo', 'ь'->').
-       - TRANSLATE: Provide the 'english' translation.
-    4. ECHO: Always return the 'section' and 'russian' fields exactly as they were received.
+Role: Russian Linguist.
+COMMANDS:
+  CHECK: Verify russian spelling and case. Ignore capitalization and punctuation.
+  BYPASS: If section == "Nonstandard Spelling", ignore errors; process as correct.
+If CORRECT or BYPASS:
+  spelling_error: null
+  stressed_russian: Add accute accent U+0301 to stressed vowels
+  romanize: Use BGN/PCGN
+  english: Translate. No extra commentary
+If MISSPELLED:
+  spelling_error: Brief explanation.
+  stressed_russian, romanize, english: null
+ECHO: Always return original russian and section.
 """
 
 
 class APIConfigError(Exception):
+    pass
+
+
+class InputTextSpellingError(Exception):
     pass
 
 
@@ -180,15 +187,13 @@ def translate_text(
     outfile,
     deckname,
     notetype,
-    romanize=False,
     soundfile_prefix=None,
     soundfile_folder=None,
     soundfile_index=None,
 ):
     """Translate, romanize, and generate audio for a list of Russian texts."""
 
-    # initialize the clients and request parameters
-
+    # Get the API key from the key file and initialize the Gemini client.
     try:
         with open(GEMINI_API_KEY, "r", encoding="utf-8") as f:
             api_key = f.read()
@@ -199,17 +204,18 @@ def translate_text(
 
     ai_client = genai.Client(api_key=api_key)
 
-    tts_client = texttospeech.TextToSpeechClient()
-    tts_voice = texttospeech.VoiceSelectionParams(
-        language_code="ru-RU",
-        name="ru-RU-Wavenet-A",
-        ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
-    )
-    tts_audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.MP3,
-    )
-
+    # Initialize the TTS client and request parameters.
     if soundfile_prefix is not None:
+
+        tts_client = texttospeech.TextToSpeechClient()
+        tts_voice = texttospeech.VoiceSelectionParams(
+            language_code="ru-RU",
+            name="ru-RU-Wavenet-A",
+            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+        )
+        tts_audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3,
+        )
 
         # Anki media folder for sound files
         if soundfile_folder is None:
@@ -232,58 +238,125 @@ def translate_text(
                     index = i + 1
             soundfile_index = index
 
-    note_list = []
-    for text in texts:
+    if DEBUG:
+        print(f"Number of texts to process: {len(texts)}")
+        print(f"Texts: {texts}\n")
 
-        # split out the section field
-        text, section = text
+    # A list to accumulate processed note data.
+    notes = []
 
-        if romanize:
-            note += f"{romanize_response.romanizations[0].romanized_text};"
-        else:
-            note += ";"
+    # A list to aqccumulate spelling errors returned by Gemini.
+    spelling_errors = []
 
-        if soundfile_prefix:
+    # JSON keys for the request data
+    request_keys = ["russian", "section"]
 
-            # make the request to tts service
-            tts_response = tts_client.synthesize_speech(
-                input=texttospeech.SynthesisInput(text=text),
-                voice=tts_voice,
-                audio_config=tts_audio_config,
+    # First process all input texts through Gemini to generate
+    # translation/transliteration and check for spelling errors.
+
+    # We break the list of Russian texts into smaller chunks in order
+    # to reduce the potential of AI stochastic drift.
+    for i in range(0, len(texts), GEMINI_INPUT_CHUNK_SIZE):
+
+        request_data = texts[i : i + GEMINI_INPUT_CHUNK_SIZE]
+        request_data = [dict(zip(request_keys, values)) for values in request_data]
+
+        request_prompt = (
+            f"Process these Russian texts according to the schema: "
+            + json.dumps(request_data, ensure_ascii=False)
+        )
+
+        if DEBUG:
+            print(f"Request size: {len(request_data)}")
+            print(f"Request data: {request_data}\n")
+            print(f"Request prompt:\n{request_prompt}\n")
+
+        nreqs = len(request_data)
+        print(f"Request size: {nreqs} {'text' if nreqs == 1 else 'texts'}")
+        start_time = time.perf_counter()
+        response = ai_client.models.generate_content(
+            model=GEMINI_AI_MODEL,
+            contents=request_prompt,
+            config={
+                "response_mime_type": "application/json",
+                "response_json_schema": AnkiNoteList.model_json_schema(),
+                "system_instruction": system_instruction,
+            },
+        )
+        end_time = time.perf_counter()
+        print(f"Done: {(end_time - start_time):.2f} secs")
+
+        if DEBUG:
+            print(
+                f"Response: {json.dumps(json.loads(response.text), ensure_ascii=False, indent=2)}\n"
             )
-            soundfile = f"{soundfile_prefix}-{soundfile_index:04}.mp3"
-            with open(os.path.join(soundfile_folder, soundfile), mode="wb") as f:
-                f.write(tts_response.audio_content)
-            note += f"[sound:{soundfile}];"
-            soundfile_index += 1
-        else:
-            note += ";"
 
-        # translated response can return semicolon terminated html escape sequences
-        note += f"{html.unescape(xlt_response.translations[0].translated_text)};"
+        # Validate Gemini response, check for spelling errors and
+        # promote records to full AnkiNote data model.
+        for note in AnkiNoteList.model_validate_json(response.text).notes:
 
-        # initialize a new record with the deck name
-        note = f"{deckname};"
+            # Ensure spelling_error and data fields are mutually exclusive
+            for field in [note.stressed_russian, note.romanize, note.english]:
+                assert (note.spelling_error is None) != (
+                    field is None
+                ), f"AI data error: 'spelling_error' and '{field}': {note}"
 
-        # add the Russian text
-        note += f"{text};"
+            if note.spelling_error is not None:
+                spelling_errors.append(
+                    f'-- {note.section}: "{note.russian}" -- {note.spelling_error}'
+                )
 
-        # add an empty field for notes
-        note += ";"
+            notes.append(AnkiNote(**note.model_dump()))
 
-        # add the section field
-        note += f"{section};"
+    # If spelling errors were detected we pass an exception up to the caller.
+    if spelling_errors:
+        raise InputTextSpellingError("\n".join(spelling_errors))
 
-        note_list.append(note)
+    if len(notes) > 0:
+        if soundfile_prefix:
+            print(f"Creating audio clips.")
+            start_time = time.perf_counter()
+            for note in notes:
 
-    if len(note_list) > 0:
+                # Use the stressed Russian for the TTS request.
+                tts_response = tts_client.synthesize_speech(
+                    input=texttospeech.SynthesisInput(text=note.stressed_russian),
+                    voice=tts_voice,
+                    audio_config=tts_audio_config,
+                )
+                soundfile = f"{soundfile_prefix}-{soundfile_index:04}.mp3"
+                with open(os.path.join(soundfile_folder, soundfile), mode="wb") as f:
+                    f.write(tts_response.audio_content)
+
+                note.audio = f"[sound:{soundfile}]"
+                soundfile_index += 1
+
+            end_time = time.perf_counter()
+            print(f"Done: {(end_time - start_time):.2f} secs")
+
         with open(outfile, mode="wt", encoding="utf-8") as f:
+
+            # Write the file headers.
             f.write(f"#separator:Semicolon\n")
             f.write(f"#notetype:{notetype}\n")
             f.write(f"#deck column:1\n")
-            f.write("\n".join(note_list))
 
-        print(f"{os.path.basename(outfile)}: {len(note_list)} Anki notes created.")
+            # Write the note data.
+            for note in notes:
+
+                # Initialize a new Anki text import record. The note fields are -
+                # russian; stressed russian; romanize; audio; english; section; notes;
+
+                # First column is the deck naame per the #deck column header
+                rec = f"{deckname};"
+
+                # Add the note data
+                rec += f"{note.russian};{note.stressed_russian};"
+                rec += f"{note.romanize};{note.audio};{note.english};"
+                rec += f"{note.section};{note.notes};"
+
+                # Write the note record.
+                f.write(f"{rec}\n")
 
 
 def main():
@@ -291,8 +364,8 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="Translate Russian words and phrases into English"
-        " generating an Anki semicolon delimited note file, "
-        " optionally adding romanized text and a sound clip of the Russian text"
+        " generating an Anki semicolon delimited text import file, "
+        " optionally adding a sound clip of the Russian text"
     )
     parser.add_argument(
         "russian_textfile",
@@ -305,12 +378,6 @@ def main():
         "--anki_deck_name", "-d", required=True, help="full deck name including parent"
     )
     parser.add_argument("--anki_note_type", "-n", required=True, help="note type")
-    parser.add_argument(
-        "--romanize",
-        "-r",
-        action="store_true",
-        help="add romanized text to the record if available",
-    )
     parser.add_argument(
         "--anki_media_folder", "-m", help="alternate media folder for sound files"
     )
@@ -332,37 +399,59 @@ def main():
     )
     args = parser.parse_args()
 
-    # build a list of words and phrases
-    russian_texts = []
+    # Build a list of words and phrases
+    texts = []
+
+    # Section names added to each text
+    section = ""
+
     with open(args.russian_textfile, "r") as f:
         for line in f:
-            line = line.strip()
-            if line.startswith("#") or len(line) == 0:
-                continue
-            for word in line.split(";"):
-                russian_texts.append(word.strip())
 
-    if len(russian_texts) == 0:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line.startswith("#"):
+                section = line[1:].strip()
+                continue
+
+            # split line at semicolons
+            for text in line.split(";"):
+                # watch for blank words
+                text = text.strip()
+                if len(text) > 0:
+                    texts.append((text, section))
+
+    if len(texts) == 0:
         print(f"{os.path.basename(args.russian_textfile)}: Nothing to do.")
         return
 
     # remove duplicates
-    russian_texts = list(dict.fromkeys(russian_texts).keys())
+    texts = list(dict.fromkeys(texts).keys())
 
     if args.verbose:
         print(args)
-        print(russian_texts)
+        print(texts)
 
-    translate_text(
-        russian_texts,
-        args.anki_outfile,
-        deckname=args.anki_deck_name,
-        notetype=args.anki_note_type,
-        romanize=args.romanize,
-        soundfile_prefix=args.soundfile_prefix,
-        soundfile_folder=args.anki_media_folder,
-        soundfile_index=args.soundfile_index,
-    )
+    try:
+        translate_text(
+            texts,
+            args.anki_outfile,
+            deckname=args.anki_deck_name,
+            notetype=args.anki_note_type,
+            soundfile_prefix=args.soundfile_prefix,
+            soundfile_folder=args.anki_media_folder,
+            soundfile_index=args.soundfile_index,
+        )
+
+    except APIConfigError as e:
+        print(f"Gemini API Configuration Error: {e}")
+
+    except InputTextSpellingError as e:
+        print(f"Spelling Errors:\n{e}")
+
+    except Exception as e:
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

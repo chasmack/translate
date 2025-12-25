@@ -46,6 +46,7 @@ Notes:
 """
 
 import os
+import traceback
 from datetime import datetime, timezone
 
 from google.auth.transport.requests import Request
@@ -55,6 +56,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from anki_import_ai import translate_text
+from anki_import_ai import APIConfigError, InputTextSpellingError
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
@@ -165,71 +167,23 @@ def get_drive_files(service, folder_id):
     return files
 
 
-def update_local_files(service, file):
-    """Update local text file with corresponding Drive file."""
-
-    # Replace space with underbar and add the local path
-    file["localName"] = os.path.join(FS_PATH, file["name"].replace(" ", "_"))
-
-    # Google Drive modification time strings are UTC.
-    # Prior to Python 3.11 fromisoformat() did not support UTC offsets.
-    # file["modifiedTime"] = datetime.fromisoformat(file["modifiedTime"], tz=timezone.utc)
-    iso_format = "%Y-%m-%dT%H:%M:%S.%f%z"
-    file["modifiedTime"] = datetime.strptime(file["modifiedTime"], iso_format)
-
-    local_name = file["localName"] + ".rus"
-    if os.path.exists(local_name) and os.path.isfile(local_name):
-
-        # Local modification timestamps are local time and converted to UTC.
-        local_modtime = os.path.getmtime(local_name)
-        local_modtime = datetime.fromtimestamp(local_modtime, tz=timezone.utc)
-
-        if file["modifiedTime"] < local_modtime:
-            # local content is up to date
-            file["words"] = []
-
-        else:
-            # Drive file has been modified, compare contents
-            drive_content = get_drive_content(service, file)
-            drive_words = parse_content(drive_content)
-            with open(local_name, "r") as f:
-                local_content = f.read()
-            local_words = parse_content(local_content)
-
-            # new words for Anki import
-            file["words"] = list(set(drive_words) - set(local_words))
-
-            # update the local file
-            with open(local_name, "w") as f:
-                f.write(drive_content)
-
-    else:
-        # new Drive file, get content and download file
-        drive_content = get_drive_content(service, file)
-        file["words"] = parse_content(drive_content)
-        with open(local_name, "w") as f:
-            f.write(drive_content)
-
-
 def get_drive_content(service, file):
     """Export a Google Docs file contents as plain text."""
 
     # Download content from Drive stripping any BOM.
-    content = (
+    file["content"] = (
         service.files()
         .export_media(fileId=file["id"], mimeType="text/plain")
         .execute()
         .decode("utf-8-sig")
     )
 
-    return content
-
 
 def parse_content(content):
-    """Parse text for semicolon delimited words and phrases."""
+    """Parse content for semicolon delimited words and phrases."""
 
     # build a list of vocabulary words and phrases with section information
-    words = []
+    texts = []
 
     # section headers added to each word
     section = ""
@@ -243,16 +197,69 @@ def parse_content(content):
             continue
 
         # split line at semicolons
-        for word in line.split(";"):
+        for text in line.split(";"):
             # watch for blank words
-            word = word.strip()
-            if len(word) > 0:
-                words.append((word, section))
+            text = text.strip()
+            if len(text) > 0:
+                texts.append((text, section))
 
     # remove duplicates
-    words = list(dict.fromkeys(words).keys())
+    texts = list(dict.fromkeys(texts).keys())
 
-    return words
+    return texts
+
+
+def diff_drive_content(service, file):
+    """Compare Drive content with the corresponding local file."""
+
+    # Google Drive modification time strings are UTC.
+    # Prior to Python 3.11 fromisoformat() did not support UTC offsets.
+    # file["modifiedTime"] = datetime.fromisoformat(file["modifiedTime"], tz=timezone.utc)
+    iso_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+    file["modifiedTime"] = datetime.strptime(file["modifiedTime"], iso_format)
+
+    local_path = f"{file['localPath']}.rus"
+    if os.path.exists(local_path) and os.path.isfile(local_path):
+
+        # Local modification timestamps are local time and converted to UTC.
+        local_modtime = os.path.getmtime(local_path)
+        local_modtime = datetime.fromtimestamp(local_modtime, tz=timezone.utc)
+
+        if file["modifiedTime"] < local_modtime:
+            # local content is up to date
+            file["texts"] = []
+            file["deletes"] = []
+            file["content"] = ""
+
+        else:
+            # Drive file has been modified, compare and update contents
+
+            get_drive_content(service, file)
+
+            drive_texts = parse_content(file["content"])
+            with open(local_path, "r") as f:
+                local_content = f.read()
+            local_texts = parse_content(local_content)
+
+            # new words for Anki import
+            file["texts"] = list(set(drive_texts) - set(local_texts))
+
+            # words to be removed from the Anki deck
+            file["deletes"] = list(set(local_texts) - set(drive_texts))
+
+    else:
+        # new Drive file, get the content
+        get_drive_content(service, file)
+        file["texts"] = parse_content(file["content"])
+        file["deletes"] = []
+
+
+def update_local_file(service, file):
+    """Update local text file with corresponding Drive file."""
+
+    local_name = file["localPath"] + ".rus"
+    with open(local_name, "w") as f:
+        f.write(file["content"])
 
 
 def main():
@@ -265,18 +272,45 @@ def main():
     files = get_drive_files(service, folder_id)
 
     for file in files:
-        update_local_files(service, file)
 
-        if len(file["words"]) > 0:
-            translate_text(
-                file["words"],
-                file["localName"] + ".txt",
-                deckname="::".join([ANKI_PARENT_DECK, file["name"]]),
-                notetype=ANKI_NOTETYPE,
-                romanize=True,
-                soundfile_prefix=ANKI_SOUNDFILE_PREFIX,
+        # Replace space in Drive file name with underbar and add the local path
+        file["localPath"] = os.path.join(FS_PATH, file["name"].replace(" ", "_"))
+
+        diff_drive_content(service, file)
+        deckname = "::".join([ANKI_PARENT_DECK, file["name"]])
+
+        if len(file["texts"]) > 0:
+            print(f"Processing {file['name']}")
+            try:
+                translate_text(
+                    file["texts"],
+                    file["localPath"] + ".txt",
+                    deckname=deckname,
+                    notetype=ANKI_NOTETYPE,
+                    soundfile_prefix=ANKI_SOUNDFILE_PREFIX,
+                )
+            except APIConfigError as e:
+                print(f"Gemini API Configuration Error: {e}")
+                exit()
+            except InputTextSpellingError as e:
+                print(f"Spelling Errors:\n{e}")
+                exit()
+            except Exception as e:
+                traceback.print_exc()
+                exit()
+
+        for text in file["deletes"]:
+            russian, section = text
+            print(f"Delete: deck:{deckname} section:{section} russian:{russian}")
+
+        if file["content"]:
+            # Drive file is either new or has been updated.
+            update_local_file(service, file)
+
+            n = len(file["texts"])
+            print(
+                f"{file['name']} updated, {n} {'note' if n == 1 else 'notes'} created."
             )
-            # print(f"{file["name"]}: {len(file["words"])} records created.")
 
 
 if __name__ == "__main__":

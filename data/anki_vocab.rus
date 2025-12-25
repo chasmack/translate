@@ -1,0 +1,31 @@
+# Russian::Test Notes
+#
+# Comment lines start with a hash. Blank lines are ignored.
+# An initial hash also marks section names. These section names are 
+# copied to the section field of the note and can be used to create filtered decks. 
+# Section names should be concise descriptions of what follows. New section
+# information replaces any previous section information. A hash on an otherwise 
+# blank line clears section information.
+#
+
+# Words 1
+ангел; бабочка; веер; глобус; дом; евро; ёлка; жук; зонт; ирис; йогурт; кот; лимон; мороженое; нож; остров; паспорт; радуга; самолёт; торт; утка; флаг; хлеб; цепь; чашка; шоколад; щит; объектив; рыба; пень; эльф; юпитер; яблоко;
+
+# Dialogue 1
+Здравствуйте
+Добрый день.
+Я Маша. Как вас зовут?
+Меня зовут Лена.
+Познакомьтесь
+Это Ольга Петровна - она моя мама.
+Это Иван Иванович - он мой папа. 
+
+# Numbers
+ноль; один; два; три; четыре; пять;
+шесть; семь; восемь; девять; десять;
+одиннадцать; двенадцать; тринадцать; четырнадцать; пятнадцать; 
+шестнадцать; семнадцать; восемнадцать; девятнадцать; двадцать; 
+тридцать; сорок; пятьдесят; шестьдесят; семьдесят; восемьдесят; девяносто; сто;
+
+# Math
+плюс; минус; разделить на; умножить на; будет

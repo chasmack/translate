@@ -5,19 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: anki_vocab.py",
+            "name": "Python Debugger: anki_import_ai.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/anki_vocab.py",
+            "program": "${workspaceFolder}/src/anki_import_ai.py",
             "console": "integratedTerminal",
             "args": [
-                "--romanize",
-                "--anki_media_folder",
-                "data",
+                "--anki_deck_name",
+                "Russian::Test Notes",
+                "--anki_note_type",
+                "Russian Vocab",
                 "--soundfile_prefix",
-                "RT_VOCAB",
-                "data/rt_vocab.rus",
-                "data/rt_vocab.txt",
+                "RUSSIAN_VOCAB",
+                "data/anki_vocab.rus",
+                "data/anki_vocab.txt",
             ]
         },
         {
