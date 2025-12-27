@@ -161,12 +161,12 @@ system_instruction = """
 Role: Russian Linguist.
 COMMANDS:
   CHECK: Verify russian spelling and case. Ignore capitalization and punctuation.
-  BYPASS: If section == "Nonstandard Spelling", ignore errors; process as correct.
+  BYPASS: If section == "Nonstandard Spelling", ignore errors; process as CORRECT.
 If CORRECT or BYPASS:
   spelling_error: null
-  stressed_russian: Add accute accent U+0301 to stressed vowels
-  romanize: Use BGN/PCGN
-  english: Translate. No extra commentary
+  stressed_russian: Add accute accent U+0301 to stressed vowels except single-syllable words.
+  romanize: Use BGN/PCGN.
+  english: Translate. Minimal extra commentary.
 If MISSPELLED:
   spelling_error: Brief explanation.
   stressed_russian, romanize, english: null
