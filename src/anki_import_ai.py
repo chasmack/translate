@@ -162,6 +162,7 @@ Role: Russian Linguist.
 COMMANDS:
   CHECK: Verify russian spelling and case. Ignore capitalization and punctuation.
   BYPASS: If section == "Nonstandard Spelling", ignore errors; process as CORRECT.
+  FORMAT: Specified JSON data schema. Do not use semicolons in generated content.
 If CORRECT or BYPASS:
   spelling_error: null
   stressed_russian: Add accute accent U+0301 to stressed vowels except single-syllable words.
