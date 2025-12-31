@@ -91,6 +91,7 @@ import argparse
 import traceback
 import time
 import json
+import unicodedata
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -157,6 +158,16 @@ class AnkiNote(AnkiBaseNote):
     )
 
 
+# The System Instruction is provided to Gemini with each request to guide its response.
+# It should be concise yet thoroughly explain what is expected from the processing.
+# Unfortunately, since we are dealing with a probabilistic process subject to stochastic
+# drift, strict adherence to the system instruction is not guaranteed.
+#
+# For example, though the system instruction requested U+0301 combining accents Gemini
+# still managed to generate an NFC (Canonical Composition) accented "a". Subsequent
+# addition of an explicit NFD requirement may or may not change Gemini's behavior.
+# Any system utilizing this probabilistic output needs to guard against these misbehaviors.
+
 system_instruction = """
 Role: Russian Linguist.
 COMMANDS:
@@ -165,7 +176,7 @@ COMMANDS:
   FORMAT: Specified JSON data schema. Do not use semicolons in generated content.
 If CORRECT or BYPASS:
   spelling_error: null
-  stressed_russian: Add accute accent U+0301 to stressed vowels except single-syllable words.
+  stressed_russian: Add NFD accute accent U+0301 to stressed vowels except single-syllable words.
   romanize: Use BGN/PCGN.
   english: Translate. Minimal extra commentary.
 If MISSPELLED:
@@ -319,9 +330,12 @@ def translate_text(
             start_time = time.perf_counter()
             for note in notes:
 
-                # Use the stressed Russian for the TTS request.
+                # TTS expects the NFD decomposed form of accented characters.
+                text = unicodedata.normalize("NFD", note.stressed_russian)
+
+                # Use the NFD stressed Russian for the TTS request.
                 tts_response = tts_client.synthesize_speech(
-                    input=texttospeech.SynthesisInput(text=note.stressed_russian),
+                    input=texttospeech.SynthesisInput(text=text),
                     voice=tts_voice,
                     audio_config=tts_audio_config,
                 )
