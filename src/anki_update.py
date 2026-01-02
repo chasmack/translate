@@ -46,6 +46,7 @@ Notes:
 """
 
 import os
+import re
 import traceback
 from datetime import datetime, timezone
 
@@ -171,15 +172,35 @@ def get_drive_content(service, file):
     """Export a Google Docs file contents as plain text."""
 
     # Download content from Drive stripping any BOM.
-    file["content"] = (
+    content = (
         service.files()
         .export_media(fileId=file["id"], mimeType="text/plain")
         .execute()
         .decode("utf-8-sig")
     )
 
+    return content
 
-def parse_content(content):
+
+def parse_headers(content):
+    """Parse content for header lines."""
+
+    headers = {}
+    header_pattern = r"^#([^:]+):(.+)"
+
+    for line in content.splitlines():
+        m = re.match(header_pattern, line)
+        if m is None:
+            break
+        name, val = (s.strip() for s in m.groups())
+        if name == "" or val == "":
+            break
+        headers[name] = val
+
+    return headers
+
+
+def parse_texts(content):
     """Parse content for semicolon delimited words and phrases."""
 
     # build a list of vocabulary words and phrases with section information
@@ -209,7 +230,7 @@ def parse_content(content):
     return texts
 
 
-def diff_drive_content(service, file):
+def diff_contents(service, file):
     """Compare Drive content with the corresponding local file."""
 
     # Google Drive modification time strings are UTC.
@@ -227,19 +248,22 @@ def diff_drive_content(service, file):
 
         if file["modifiedTime"] < local_modtime:
             # local content is up to date
+            file["content"] = ""
+            file["headers"] = {}
             file["texts"] = []
             file["deletes"] = []
-            file["content"] = ""
 
         else:
             # Drive file has been modified, compare and update contents
 
-            get_drive_content(service, file)
+            file["content"] = get_drive_content(service, file)
 
-            drive_texts = parse_content(file["content"])
+            file["headers"] = parse_headers(file["content"])
+
+            drive_texts = parse_texts(file["content"])
             with open(local_path, "r") as f:
                 local_content = f.read()
-            local_texts = parse_content(local_content)
+            local_texts = parse_texts(local_content)
 
             # new words for Anki import
             file["texts"] = list(set(drive_texts) - set(local_texts))
@@ -249,8 +273,9 @@ def diff_drive_content(service, file):
 
     else:
         # new Drive file, get the content
-        get_drive_content(service, file)
-        file["texts"] = parse_content(file["content"])
+        file["content"] = get_drive_content(service, file)
+        file["headers"] = parse_headers(file["content"])
+        file["texts"] = parse_texts(file["content"])
         file["deletes"] = []
 
 
@@ -274,10 +299,16 @@ def main():
     for file in files:
 
         # Replace space in Drive file name with underbar and add the local path
-        file["localPath"] = os.path.join(FS_PATH, file["name"].replace(" ", "_"))
+        file["localPath"] = os.path.join(
+            FS_PATH, file["name"].replace(" ", "_").lower()
+        )
 
-        diff_drive_content(service, file)
-        deckname = "::".join([ANKI_PARENT_DECK, file["name"]])
+        diff_contents(service, file)
+
+        if "deck" in file["headers"]:
+            deckname = file["headers"]["deck"]
+        else:
+            deckname = "::".join([ANKI_PARENT_DECK, file["name"]])
 
         if len(file["texts"]) > 0:
             print(f"Processing {file['name']}")
