@@ -176,9 +176,10 @@ COMMANDS:
   FORMAT: Specified JSON data schema. Do not use semicolons in generated content.
 If CORRECT or BYPASS:
   spelling_error: null
-  stressed_russian: Add NFD accute accent U+0301 to stressed vowels except single-syllable words.
+  stressed_russian: Add NFD accute accent U+0301 to stressed vowels except single-syllable words. \
+Do not add accute accent to words containing the Russian letter ё (yo).
   romanize: Use BGN/PCGN.
-  english: Translate. Minimal extra commentary.
+  english: Translate. Minimize extra commentary.
 If MISSPELLED:
   spelling_error: Brief explanation.
   stressed_russian, romanize, english: null
