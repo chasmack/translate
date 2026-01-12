@@ -332,9 +332,15 @@ def translate_text(
             for note in notes:
 
                 # TTS expects the NFD decomposed form of accented characters.
-                text = unicodedata.normalize("NFD", note.stressed_russian)
-
                 # Use the NFD stressed Russian for the TTS request.
+                # text = unicodedata.normalize("NFD", note.stressed_russian)
+
+                # Use of the stressed_russian can lcause TTS to generate unnatural
+                # stress patterns. Where necessary (homograms) stress can be included
+                # in the Russian source but in general TTS should be allowed to use
+                # its native stress patterns.
+                text = note.russian
+
                 tts_response = tts_client.synthesize_speech(
                     input=texttospeech.SynthesisInput(text=text),
                     voice=tts_voice,
