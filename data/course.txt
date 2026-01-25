@@ -1,0 +1,28 @@
+#separator:Semicolon
+#notetype:Russian Vocab
+#deck column:1
+Russian::Course;Очень приятно.;О́чень прия́тно.;Ochen' priyatno.;[sound:RUSSIAN_VOCAB-0463.mp3];Nice to meet you.;Dialogues 4.13;;
+Russian::Course;Мэри. Я англичанка.;Мэ́ри. Я англича́нка.;Meri. Ya anglichanka.;[sound:RUSSIAN_VOCAB-0464.mp3];Mary. I am an Englishwoman.;Dialogues 4.13;;
+Russian::Course;А вы говорите по-английски?;А вы говори́те по-англи́йски?;A vy govorite po-angliyski?;[sound:RUSSIAN_VOCAB-0465.mp3];And do you speak English?;Dialogues 4.13;;
+Russian::Course;Они в Москве, в гостинице «Россия».;Они́ в Москве́, в гости́нице «Росси́я».;Oni v Moskve, v gostinitse «Rossiya».;[sound:RUSSIAN_VOCAB-0466.mp3];They are in Moscow, at the Rossiya Hotel.;Dialogues 4.13;;
+Russian::Course;Я не знаю.;Я не зна́ю.;Ya ne znayu.;[sound:RUSSIAN_VOCAB-0467.mp3];I don't know.;Dialogues 4.13;;
+Russian::Course;чистое золото;чи́стое зо́лото;chistoye zoloto;[sound:RUSSIAN_VOCAB-0468.mp3];pure gold;Vocabulary 4.12;;
+Russian::Course;Они говорят по-русски.;Они́ говоря́т по-ру́сски.;Oni govoryat po-russki.;[sound:RUSSIAN_VOCAB-0469.mp3];They speak Russian.;Dialogues 4.13;;
+Russian::Course;Почему Мэри едет на троллейбусе, А не на метро?;Почему́ Мэ́ри е́дет на тролле́йбусе, а не на метро́?;Pochemu Meri yedet na trolleybuse, a ne na metro?;[sound:RUSSIAN_VOCAB-0470.mp3];Why is Mary going by trolleybus, and not by metro?;Dialogues 4.13;;
+Russian::Course;На проспекте Мира.;На проспе́кте Ми́ра.;Na prospekte Mira.;[sound:RUSSIAN_VOCAB-0471.mp3];On Mir Avenue.;Dialogues 4.13;;
+Russian::Course;На улице Волгина. А вы?;На у́лице Во́лгина. А вы?;Na ulitse Volgina. A vy?;[sound:RUSSIAN_VOCAB-0472.mp3];On Volgin Street. And you?;Dialogues 4.13;;
+Russian::Course;Меня зовут Вадим.;Меня́ зову́т Вади́м.;Menya zovut Vadim.;[sound:RUSSIAN_VOCAB-0473.mp3];My name is Vadim.;Dialogues 4.13;;
+Russian::Course;Меня зовут Ева. А как вас зовут?;Меня́ зову́т Е́ва. А как вас зову́т?;Menya zovut Yeva. A kak vas zovut?;[sound:RUSSIAN_VOCAB-0474.mp3];My name is Eva. And what is your name?;Dialogues 4.13;;
+Russian::Course;Я понимаю, но не говорю.;Я понима́ю, но не говорю́.;Ya ponimayu, no ne govoryu.;[sound:RUSSIAN_VOCAB-0475.mp3];I understand, but I don't speak.;Dialogues 4.13;;
+Russian::Course;Я изучаю русский язык здесь в Москве.;Я изуча́ю ру́сский язы́к здесь в Москве́.;Ya izuchayu russkiy yazyk zdes' v Moskve.;[sound:RUSSIAN_VOCAB-0476.mp3];I am studying the Russian language here in Moscow.;Dialogues 4.13;;
+Russian::Course;Это Наташа.;Э́то Ната́ша.;Eto Natasha.;[sound:RUSSIAN_VOCAB-0477.mp3];This is Natasha.;Dialogues 4.13;;
+Russian::Course;Здравствуй, Ваня. Нет, я еду на троллейбусе.;Здра́вствуй, Ва́ня. Нет, я е́ду на тролле́йбусе.;Zdravstvuy, Vanya. Net, ya yedu na trolleybuse.;[sound:RUSSIAN_VOCAB-0478.mp3];Hello, Vanya. No, I'm going by trolleybus.;Dialogues 4.13;;
+Russian::Course;Вы хорошо говорите по-русски.;Вы хорошо́ говори́те по-ру́сски.;Vy khorosho govorite po-russki.;[sound:RUSSIAN_VOCAB-0479.mp3];You speak Russian well.;Dialogues 4.13;;
+Russian::Course;Вот Владимир Смирнов и Мэри Робинсон.;Вот Влади́мир Смирно́в и Мэ́ри Ро́бинсон.;Vot Vladimir Smirnov i Meri Robinson.;[sound:RUSSIAN_VOCAB-0480.mp3];Here are Vladimir Smirnov and Mary Robinson.;Dialogues 4.13;;
+Russian::Course;Здравствуйте, меня зовут Володя. А как вас зовут?;Здра́вствуйте, меня́ зову́т Воло́дя. А как вас зову́т?;Zdravstvuyte, menya zovut Volodya. A kak vas zovut?;[sound:RUSSIAN_VOCAB-0481.mp3];Hello, my name is Volodya. And what is your name?;Dialogues 4.13;;
+Russian::Course;диалог;диало́г;dialog;[sound:RUSSIAN_VOCAB-0482.mp3];dialogue;Vocabulary 4.12;;
+Russian::Course;президент;президе́нт;prezident;[sound:RUSSIAN_VOCAB-0483.mp3];president;Vocabulary 4.12;;
+Russian::Course;Как вас зовут?;Как вас зову́т?;Kak vas zovut?;[sound:RUSSIAN_VOCAB-0484.mp3];What is your name?;Dialogues 4.13;;
+Russian::Course;Здравствуй, Наташа. Ты едешь домой на автобусе?;Здра́вствуй, Ната́ша. Ты е́дешь домо́й на авто́бусе?;Zdravstvuy, Natasha. Ty yedesh' domoy na avtobuse?;[sound:RUSSIAN_VOCAB-0485.mp3];Hello, Natasha. Are you going home by bus?;Dialogues 4.13;;
+Russian::Course;золото 999 пробы;зо́лото 999 про́бы;zoloto 999 proby;[sound:RUSSIAN_VOCAB-0486.mp3];999 fineness gold;Vocabulary 4.12;;
+Russian::Course;Где вы живёте, Мэри?;Где вы живёте, Мэ́ри?;Gde vy zhivëte, Meri?;[sound:RUSSIAN_VOCAB-0487.mp3];Where do you live, Mary?;Dialogues 4.13;;

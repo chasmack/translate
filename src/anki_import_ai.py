@@ -53,17 +53,18 @@ Usage:
         media folder, etc.).
 
     Example:
-        python anki-vocab.py russian_words.txt anki_notes.txt \
-            -r -p vocab -m /path/to/anki/media
+        python anki_import_ai.py russian_words.txt anki_notes.txt \
+            -n "Russian Vocab" -r -p vocab -m /path/to/anki/media
 
     -   `russian_words.txt`: Input file with Russian words/phrases.
     -   `anki_notes.txt`: Output file for Anki notes.
+    -   `-n`: Anki note type for text import headers.
     -   `-r`: Enable romanization.
     -   `-p vocab`: Enable sound file generation and use the sound file prefix "vocab".
     -   `-m /path/to/anki/media`: Specify the Anki media folder for sound files.
 
 Functions:
-    - translate_text(texts, outfile, romanize, soundfile_folder,
+    - translate_text(texts, outfile, deckname, notetypr, romanize, soundfile_folder,
             soundfile_prefix, soundfile_index):
         Translates, romanizes, and generates audio for a list of Russian texts.
         Creates the Anki note file.
@@ -80,8 +81,7 @@ Notes:
       sound files if no index is provided. If an index is provided the new
       sound files can potentially overwrite existing sound files in the Anki
       media folder.
-    - The Anki note type is set to "RT Vocab" using the text file import header.
-    - The script will create the sound files in the specified media folder.
+    - The script will save sound files to the specified media folder.
 """
 
 import os
@@ -331,10 +331,6 @@ def translate_text(
             start_time = time.perf_counter()
             for note in notes:
 
-                # TTS expects the NFD decomposed form of accented characters.
-                # Use the NFD stressed Russian for the TTS request.
-                # text = unicodedata.normalize("NFD", note.stressed_russian)
-
                 # Use of the stressed_russian can lcause TTS to generate unnatural
                 # stress patterns. Where necessary (homograms) stress can be included
                 # in the Russian source but in general TTS should be allowed to use
@@ -397,9 +393,9 @@ def main():
         "anki_outfile", help="semicolon delimited note file for Anki text import"
     )
     parser.add_argument(
-        "--anki_deck_name", "-d", required=True, help="full deck name including parent"
+        "--anki_deck_name", "-d", help="full deck name including parent"
     )
-    parser.add_argument("--anki_note_type", "-n", required=True, help="note type")
+    parser.add_argument("--anki_note_type", "-n", help="note type")
     parser.add_argument(
         "--anki_media_folder", "-m", help="alternate media folder for sound files"
     )
