@@ -43,7 +43,7 @@ to limit study to portions of a note deck. See data/Course.pdf for an example.
 Header information to be passed to the processing routine can be included with
 comment lines in the format:
 
-# name:value
+`# name:value`
 
 Headers start on the first line of the input file and the header section ends
 with the first non-header line. Leading and trailing whitespace is stripped from 
@@ -51,5 +51,5 @@ the header name and value. The header name can not contain a colon.
 
 Supported headers are:
 
-# deck:deck_name
+`# deck:deck_name`
 
