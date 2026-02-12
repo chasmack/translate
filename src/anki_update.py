@@ -224,8 +224,8 @@ def parse_texts(content):
             if len(text) > 0:
                 texts.append((text, section))
 
-    # remove duplicates
-    texts = list(dict.fromkeys(texts).keys())
+    # remove duplicates keeping the last instance
+    texts = list(dict.fromkeys(texts[::-1]))[::-1]
 
     return texts
 
@@ -265,11 +265,15 @@ def diff_contents(service, file):
                 local_content = f.read()
             local_texts = parse_texts(local_content)
 
-            # new words for Anki import
-            file["texts"] = list(set(drive_texts) - set(local_texts))
+            # sets for O(1) lookups
+            local_set = set(local_texts)
+            drive_set = set(drive_texts)
+
+            # diff out existing texts while maintaining order of new items
+            file["texts"] = [item for item in drive_texts if item not in local_set]
 
             # words to be removed from the Anki deck
-            file["deletes"] = list(set(local_texts) - set(drive_texts))
+            file["deletes"] = [item for item in local_texts if item not in drive_set]
 
     else:
         # new Drive file, get the content
